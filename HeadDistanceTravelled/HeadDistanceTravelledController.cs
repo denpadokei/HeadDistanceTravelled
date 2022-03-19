@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using HeadDistanceTravelled.Jsons;
+using System;
+using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.XR;
+using Zenject;
 
 namespace HeadDistanceTravelled
 {
@@ -15,75 +14,92 @@ namespace HeadDistanceTravelled
     /// </summary>
     public class HeadDistanceTravelledController : MonoBehaviour
     {
-        public static HeadDistanceTravelledController Instance { get; private set; }
-
+        //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
+        #region // プライベートメソッド
+        private void RecordHMDPosition()
+        {
+            // OpenVR使っててID0で取れるかどうか知らん。Oculusしか持ってないからなガハハ。
+            this._platformHelper.GetNodePose(XRNode.Head, 0, out var hmdpos, out _);
+            var distance = Vector3.Distance(hmdpos, this._prevHMDPosition);
+            if (this._movementSensitivityThreshold < distance) {
+                this._hmdDistance += distance;
+                this._prevHMDPosition = hmdpos;
+            }
+        }
+        #endregion
+        //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
+        #region // メンバ変数
+        private Vector3 _prevHMDPosition = Vector3.zero;
+        private readonly float _movementSensitivityThreshold = 0.01f;
+        private float _hmdDistance = 0;
+        private IGamePause _pauseController;
+        private float _startTime;
+        private float _endTime;
+        private IAudioTimeSource _audioTimeSource;
+        private IVRPlatformHelper _platformHelper;
+        private IDifficultyBeatmap _difficultyBeatmap;
+        private bool _fpfc;
+        //private Vector3 _hmdPos;
+        #endregion
+        //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
+        #region // 構築・破棄
+        [Inject]
+        public void Constractor(IVRPlatformHelper helper, IGamePause pauseController, IAudioTimeSource timeSource, IReadonlyBeatmapData readonlyBeatmapData, GameplayCoreSceneSetupData gameplayCoreSceneSetupData)
+        {
+            this._platformHelper = helper;
+            this._pauseController = pauseController;
+            this._audioTimeSource = timeSource;
+            this._difficultyBeatmap = gameplayCoreSceneSetupData.difficultyBeatmap;
+            // ライトショーとかやられるとマジ死ぬ
+            var firstNote = readonlyBeatmapData.allBeatmapDataItems.OfType<NoteData>().FirstOrDefault();
+            var lastNote = readonlyBeatmapData.allBeatmapDataItems.OfType<NoteData>().LastOrDefault();
+            if (firstNote != null) {
+                this._startTime = firstNote.time;
+            }
+            else {
+                this._startTime = 0;
+            }
+            if (lastNote != null) {
+                this._endTime = lastNote.time;
+            }
+            else {
+                this._endTime = this._audioTimeSource.songLength;
+            }
+        }
+        #endregion
+        //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         // These methods are automatically called by Unity, you should remove any you aren't using.
         #region Monobehaviour Messages
-        /// <summary>
-        /// Only ever called once, mainly used to initialize variables.
-        /// </summary>
-        private void Awake()
+        public void Start()
         {
-            // For this particular MonoBehaviour, we only want one instance to exist at any time, so store a reference to it in a static property
-            //   and destroy any that are created while one already exists.
-            if (Instance != null) {
-                Plugin.Log?.Warn($"Instance of {GetType().Name} already exists, destroying.");
-                GameObject.DestroyImmediate(this);
+            var args = Environment.GetCommandLineArgs();
+            this._fpfc = args.Any(x => x.Contains("fpfc"));
+
+            this._platformHelper.GetNodePose(XRNode.Head, 0, out var hmdpos, out _);
+            this._prevHMDPosition = hmdpos;
+        }
+        public void Update()
+        {
+            if (this._pauseController.isPaused) {
                 return;
             }
-            GameObject.DontDestroyOnLoad(this); // Don't destroy this object on scene changes
-            Instance = this;
-            Plugin.Log?.Debug($"{name}: Awake()");
+            if (this._audioTimeSource.songTime < this._startTime || this._endTime < this._audioTimeSource.songTime) {
+                return;
+            }
+            if (this._fpfc) {
+                return;
+            }
+            this.RecordHMDPosition();
         }
-        /// <summary>
-        /// Only ever called once on the first frame the script is Enabled. Start is called after any other script's Awake() and before Update().
-        /// </summary>
-        private void Start()
+        public void OnDestroy()
         {
-
-        }
-
-        /// <summary>
-        /// Called every frame if the script is enabled.
-        /// </summary>
-        private void Update()
-        {
-
-        }
-
-        /// <summary>
-        /// Called every frame after every other enabled script's Update().
-        /// </summary>
-        private void LateUpdate()
-        {
-
-        }
-
-        /// <summary>
-        /// Called when the script becomes enabled and active
-        /// </summary>
-        private void OnEnable()
-        {
-
-        }
-
-        /// <summary>
-        /// Called when the script becomes disabled or when it is being destroyed.
-        /// </summary>
-        private void OnDisable()
-        {
-
-        }
-
-        /// <summary>
-        /// Called when the script is being destroyed.
-        /// </summary>
-        private void OnDestroy()
-        {
-            Plugin.Log?.Debug($"{name}: OnDestroy()");
-            if (Instance == this)
-                Instance = null; // This MonoBehaviour is being destroyed, so set the static instance property to null.
-
+            var data = new HDTData();
+            data.Load();
+            data.HeadDistanceTravelled += this._hmdDistance;
+            var oldResults = data.BeatmapResults.ToList();
+            oldResults.Add(new HDTData.BeatmapResult(this._difficultyBeatmap.level.levelID, this._difficultyBeatmap.level.songName, this._hmdDistance, DateTime.Now));
+            data.BeatmapResults = new ReadOnlyCollection<HDTData.BeatmapResult>(oldResults);
+            data.Save();
         }
         #endregion
     }

@@ -1,12 +1,6 @@
-﻿using IPA;
-using IPA.Config;
-using IPA.Config.Stores;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.SceneManagement;
+﻿using HeadDistanceTravelled.Installers;
+using IPA;
+using SiraUtil.Zenject;
 using IPALogger = IPA.Logging.Logger;
 
 namespace HeadDistanceTravelled
@@ -23,11 +17,13 @@ namespace HeadDistanceTravelled
         /// [Init] methods that use a Constructor or called before regular methods like InitWithConfig.
         /// Only use [Init] with one Constructor.
         /// </summary>
-        public void Init(IPALogger logger)
+        public void Init(IPALogger logger, Zenjector zenjector)
         {
             Instance = this;
             Log = logger;
             Log.Info("HeadDistanceTravelled initialized.");
+            zenjector.Install<HDTMenuInstaller>(Location.Menu);
+            zenjector.Install<HDTGameInstaller>(Location.Player);
         }
 
         #region BSIPA Config
@@ -46,8 +42,6 @@ namespace HeadDistanceTravelled
         public void OnApplicationStart()
         {
             Log.Debug("OnApplicationStart");
-            new GameObject("HeadDistanceTravelledController").AddComponent<HeadDistanceTravelledController>();
-
         }
 
         [OnExit]

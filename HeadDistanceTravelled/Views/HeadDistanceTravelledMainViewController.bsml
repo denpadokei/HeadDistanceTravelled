@@ -1,0 +1,8 @@
+﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
+	xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'
+	>
+	<horizontal horizontal-fit="PreferredSize" >
+		<text text='HeadDistanceTravelled' />
+		<text text="~hmd-distance" font-size="40"/>
+	</horizontal>
+</bg>
