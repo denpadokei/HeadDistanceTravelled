@@ -40,13 +40,13 @@ namespace HeadDistanceTravelled
         #region // パブリックメソッド
         public void Initialize()
         {
-            this.menuButton = new MenuButton("HeadDistanceTravelled", "", this.ShowMainFlowCoodniator);
-            MenuButtons.instance.RegisterButton(this.menuButton);
+            this._menuButton = new MenuButton("HeadDistanceTravelled", "", this.ShowMainFlowCoodniator);
+            MenuButtons.instance.RegisterButton(this._menuButton);
         }
 
         public void OnDestroy()
         {
-            MenuButtons.instance.UnregisterButton(this.menuButton);
+            MenuButtons.instance.UnregisterButton(this._menuButton);
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -59,7 +59,7 @@ namespace HeadDistanceTravelled
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
         private HeadDistanceTravelledMainViewController _viewController;
-        private MenuButton menuButton;
+        private MenuButton _menuButton;
 
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
