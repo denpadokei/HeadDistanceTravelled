@@ -3,7 +3,7 @@
   "id": "HeadDistanceTravelled",
   "name": "HeadDistanceTravelled",
   "author": "",
-  "version": "0.0.1-rc1",
+  "version": "0.0.1-rc2",
   "description": "",
   "gameVersion": "1.18.3",
   "dependsOn": {

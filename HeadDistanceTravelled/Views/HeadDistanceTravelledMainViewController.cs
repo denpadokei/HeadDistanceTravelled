@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 namespace HeadDistanceTravelled.Views
 {
     [HotReload(RelativePathToLayout = @"HeadDistanceTravelledMainViewController.bsml")]
-    [ViewDefinition("HeadDistanceTravelled.Views.HeadDistanceTravelledMainViewController.bsml")]
+    [ViewDefinition("HeadDistanceTravelled.Views.HeadDistanceTravelledMainViewController")]
     public class HeadDistanceTravelledMainViewController : BSMLAutomaticViewController
     {
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
