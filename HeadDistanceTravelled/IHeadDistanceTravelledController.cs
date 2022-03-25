@@ -1,7 +1,13 @@
-﻿namespace HeadDistanceTravelled
+﻿using UnityEngine;
+
+namespace HeadDistanceTravelled
 {
-    internal interface IHeadDistanceTravelledController
+    public interface IHeadDistanceTravelledController
     {
         float HMDDistance { get; }
+        Vector3 HMDPositon { get; }
+        Quaternion HMDRotation { get; }
+        event HMDDistanceChangedEventHandler OnDistanceChanged;
     }
+    public delegate void HMDDistanceChangedEventHandler(float distance, in Vector3 hmdDistance, in Quaternion hmdRotation);
 }

@@ -1,26 +1,28 @@
 ﻿using BeatSaberMarkupLanguage.Attributes;
+using BeatSaberMarkupLanguage.FloatingScreen;
 using BeatSaberMarkupLanguage.ViewControllers;
-using HeadDistanceTravelled.Jsons;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using UnityEngine;
+using Zenject;
 
 namespace HeadDistanceTravelled.Views
 {
     [HotReload]
-    public class HeadDistanceTravelledMainViewController : BSMLAutomaticViewController
+    internal class HMDDistanceFloatingScreen : BSMLAutomaticViewController, IInitializable
     {
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プロパティ
-        /// <summary>説明 を取得、設定</summary>
-        private string _hmdDistance = "";
-        [UIValue("hmd-distance")]
-        /// <summary>説明 を取得、設定</summary>
-        public string HMDDistance
+        /// <summary>HMDの距離のテキスト を取得、設定</summary>
+        private string _hmdDistanceText;
+        [UIValue("hmd-distance-text")]
+        /// <summary>HMDの距離のテキスト を取得、設定</summary>
+        public string HMDDistanceText
         {
-            get => this._hmdDistance;
+            get => this._hmdDistanceText;
 
-            set => this.SetProperty(ref this._hmdDistance, value);
+            set => this.SetProperty(ref this._hmdDistanceText, value);
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -31,16 +33,29 @@ namespace HeadDistanceTravelled.Views
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // オーバーライドメソッド
-        protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
-        {
-            var data = new HDTData();
-            data.Load();
-            this.HMDDistance = $"<size=150%>{data.HeadDistanceTravelled:#.000}</size> m";
-            base.DidActivate(firstActivation, addedToHierarchy, screenSystemEnabling);
-        }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // パブリックメソッド
+        public void Initialize()
+        {
+            this._floatingScreen = FloatingScreen.CreateFloatingScreen(new Vector2(120, 40), false, Vector3.zero, Quaternion.identity);
+            // UI Layer
+            this._floatingScreen.gameObject.layer = 5;
+            this._floatingScreen.SetRootViewController(this, AnimationType.None);
+            var oldScale = this._floatingScreen.transform.localScale;
+            this._floatingScreen.transform.localScale = new Vector3(oldScale.x, oldScale.y, -oldScale.z);
+        }
+
+        public void Update()
+        {
+            this.ManualUpdate();
+        }
+
+        public void ManualUpdate()
+        {
+            this._floatingScreen.transform.position = this._controller.HMDPositon + s_localOffset;
+            this.CreateDistanceText();
+        }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プライベートメソッド
@@ -58,12 +73,32 @@ namespace HeadDistanceTravelled.Views
         {
             this.NotifyPropertyChanged(e.PropertyName);
         }
+        private void CreateDistanceText()
+        {
+            this.HMDDistanceText = $"{this._controller.HMDDistance:#0.00} <size=50%>m</size>";
+        }
+
+        protected override void OnDestroy()
+        {
+            if (this._floatingScreen != null) {
+                Destroy(this._floatingScreen.gameObject);
+            }
+            base.OnDestroy();
+        }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
+        private IHeadDistanceTravelledController _controller;
+        private FloatingScreen _floatingScreen;
+        private static readonly Vector3 s_localOffset= new Vector3(0, 0.4f, 0);
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
+        [Inject]
+        public void Constarctor(IHeadDistanceTravelledController controller)
+        {
+            this._controller = controller;
+        }
         #endregion
     }
 }

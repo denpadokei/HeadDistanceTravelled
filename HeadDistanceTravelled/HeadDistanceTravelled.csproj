@@ -136,7 +136,9 @@
     <Compile Include="Configuration\PluginConfig.cs" />
     <Compile Include="HeadDistanceTravelledController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Views\HDTSettingView.cs" />
     <Compile Include="Views\HeadDistanceTravelledMainViewController.cs" />
+    <Compile Include="Views\HMDDistanceFloatingScreen.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="manifest.json" />
@@ -146,6 +148,12 @@
     <None Include="HeadDistanceTravelled.csproj.user" Condition="Exists('HeadDistanceTravelled.csproj.user')" />
     <EmbeddedResource Include="Views\HeadDistanceTravelledMainViewController.bsml">
       <DependentUpon>HeadDistanceTravelledMainViewController.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\HMDDistanceFlowtingScreen.bsml">
+      <DependentUpon>HMDDistanceFloatingScreen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\HDTSettingView.bsml">
+      <DependentUpon>HDTSettingView.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

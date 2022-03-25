@@ -1,6 +1,5 @@
-﻿/*
+﻿using IPA.Config.Stores;
 using System.Runtime.CompilerServices;
-using IPA.Config.Stores;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
 namespace HeadDistanceTravelled.Configuration
@@ -8,7 +7,7 @@ namespace HeadDistanceTravelled.Configuration
     internal class PluginConfig
     {
         public static PluginConfig Instance { get; set; }
-        public virtual int IntValue { get; set; } = 42; // Must be 'virtual' if you want BSIPA to detect a value change and save the config automatically.
+        public virtual bool ShowDistanceOnHMD { get; set; } = true; // Must be 'virtual' if you want BSIPA to detect a value change and save the config automatically.
 
         /// <summary>
         /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
@@ -35,4 +34,3 @@ namespace HeadDistanceTravelled.Configuration
         }
     }
 }
-*/

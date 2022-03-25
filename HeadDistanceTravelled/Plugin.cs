@@ -1,5 +1,7 @@
 ﻿using HeadDistanceTravelled.Installers;
 using IPA;
+using IPA.Config;
+using IPA.Config.Stores;
 using SiraUtil.Zenject;
 using IPALogger = IPA.Logging.Logger;
 
@@ -17,26 +19,16 @@ namespace HeadDistanceTravelled
         /// [Init] methods that use a Constructor or called before regular methods like InitWithConfig.
         /// Only use [Init] with one Constructor.
         /// </summary>
-        public void Init(IPALogger logger, Zenjector zenjector)
+        public void Init(IPALogger logger, Zenjector zenjector, Config conf)
         {
             Instance = this;
             Log = logger;
             Log.Info("HeadDistanceTravelled initialized.");
+            Configuration.PluginConfig.Instance = conf.Generated<Configuration.PluginConfig>();
+            Log.Debug("Config loaded");
             zenjector.Install<HDTMenuInstaller>(Location.Menu);
             zenjector.Install<HDTGameInstaller>(Location.Player);
         }
-
-        #region BSIPA Config
-        //Uncomment to use BSIPA's config
-        /*
-        [Init]
-        public void InitWithConfig(Config conf)
-        {
-            Configuration.PluginConfig.Instance = conf.Generated<Configuration.PluginConfig>();
-            Log.Debug("Config loaded");
-        }
-        */
-        #endregion
 
         [OnStart]
         public void OnApplicationStart()
