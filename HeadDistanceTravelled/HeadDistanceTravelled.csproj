@@ -150,7 +150,7 @@
     <Compile Include="Views\HMDDistanceFloatingScreen.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="manifest.1_20_0.json" />
+    <None Include="manifest.1_20_0.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
@@ -164,7 +164,7 @@
     <EmbeddedResource Include="Views\HDTSettingView.bsml">
       <DependentUpon>HDTSettingView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="manifest.1_18_0.json" />
+    <None Include="manifest.1_18_0.json" />
     <EmbeddedResource Include="manifest.json" />
   </ItemGroup>
   <ItemGroup>
