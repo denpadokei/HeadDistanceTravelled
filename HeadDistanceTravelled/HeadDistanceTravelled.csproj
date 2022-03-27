@@ -17,6 +17,7 @@
     <LocalRefsDir Condition="Exists('..\Refs')">..\Refs</LocalRefsDir>
     <BeatSaberDir>$(LocalRefsDir)</BeatSaberDir>
     <AppOutputBase>$(MSBuildProjectDirectory)\</AppOutputBase>
+    <BeatSeberTargetVersion>1_20_0</BeatSeberTargetVersion>
     <!--<PathMap>$(AppOutputBase)=X:\$(AssemblyName)\</PathMap>-->
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -31,7 +32,7 @@
     <OutputPath>bin\Release\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DefineConstants>VER_1_20_0</DefineConstants>
+	<DefineConstants>VER_1_20_0</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="$(DefineConstants.Contains('CIBuild')) OR '$(NCrunch)' == '1'">
     <DisableCopyToPlugins>True</DisableCopyToPlugins>
@@ -39,6 +40,13 @@
   <PropertyGroup Condition="'$(NCrunch)' == '1'">
     <DisableCopyToPlugins>True</DisableCopyToPlugins>
     <DisableZipRelease>True</DisableZipRelease>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release_1_18_0'">
+    <BeatSeberTargetVersion>1_18_0</BeatSeberTargetVersion>
+	<DefineConstants>VER_1_18_0</DefineConstants>
+    <OutputPath>bin\Release_1_18_0\</OutputPath>
+    <Optimize>true</Optimize>
+	<WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BeatmapCore, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -142,7 +150,7 @@
     <Compile Include="Views\HMDDistanceFloatingScreen.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="manifest.json" />
+    <EmbeddedResource Include="manifest.1_20_0.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
@@ -156,6 +164,8 @@
     <EmbeddedResource Include="Views\HDTSettingView.bsml">
       <DependentUpon>HDTSettingView.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="manifest.1_18_0.json" />
+    <EmbeddedResource Include="manifest.json" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BeatSaberModdingTools.Tasks">
@@ -165,4 +175,7 @@
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>copy /Y $(ProjectDir)manifest.$(BeatSeberTargetVersion).json $(ProjectDir)manifest.json</PreBuildEvent>
+  </PropertyGroup>
 </Project>

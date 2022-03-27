@@ -1,5 +1,8 @@
 ﻿using HeadDistanceTravelled.Configuration;
 using HeadDistanceTravelled.Views;
+#if VER_1_18_0
+using SiraUtil;
+#endif
 using Zenject;
 
 namespace HeadDistanceTravelled.Installers
