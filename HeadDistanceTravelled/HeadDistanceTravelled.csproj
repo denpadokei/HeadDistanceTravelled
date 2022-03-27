@@ -22,17 +22,24 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;VER_1_20_0</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-	<DefineConstants>VER_1_20_0</DefineConstants>
+    <DefineConstants>VER_1_20_0</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|1.18.0'">
+    <BeatSeberTargetVersion>1_18_0</BeatSeberTargetVersion>
+    <DefineConstants>VER_1_18_0</DefineConstants>
+    <OutputPath>bin\Release\1_18_0\</OutputPath>
+    <Optimize>true</Optimize>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition="$(DefineConstants.Contains('CIBuild')) OR '$(NCrunch)' == '1'">
     <DisableCopyToPlugins>True</DisableCopyToPlugins>
@@ -40,13 +47,6 @@
   <PropertyGroup Condition="'$(NCrunch)' == '1'">
     <DisableCopyToPlugins>True</DisableCopyToPlugins>
     <DisableZipRelease>True</DisableZipRelease>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Release_1_18_0'">
-    <BeatSeberTargetVersion>1_18_0</BeatSeberTargetVersion>
-	<DefineConstants>VER_1_18_0</DefineConstants>
-    <OutputPath>bin\Release_1_18_0\</OutputPath>
-    <Optimize>true</Optimize>
-	<WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BeatmapCore, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
