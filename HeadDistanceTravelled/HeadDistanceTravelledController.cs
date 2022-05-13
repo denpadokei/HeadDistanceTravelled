@@ -107,7 +107,7 @@ namespace HeadDistanceTravelled
         public void Start()
         {
             var args = Environment.GetCommandLineArgs();
-            this._fpfc = args.Any(x => x.Contains("fpfc"));
+            this._fpfc = args.Contains("fpfc");
 
             this._platformHelper.GetNodePose(XRNode.Head, 0, out var hmdpos, out _);
             this._prevHMDPosition = hmdpos;
