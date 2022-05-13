@@ -1,4 +1,5 @@
 ﻿using HeadDistanceTravelled.Jsons;
+using SiraUtil.Tools.FPFC;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -60,18 +61,20 @@ namespace HeadDistanceTravelled
         private IAudioTimeSource _audioTimeSource;
         private IVRPlatformHelper _platformHelper;
         private IDifficultyBeatmap _difficultyBeatmap;
-        private bool _fpfc;
+        private IFPFCSettings _fpfc;
+        private bool _isfpfc;
         private bool _isPause;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constractor(IVRPlatformHelper helper, IGamePause pauseController, IAudioTimeSource timeSource, IReadonlyBeatmapData readonlyBeatmapData, GameplayCoreSceneSetupData gameplayCoreSceneSetupData)
+        public void Constractor(IVRPlatformHelper helper, IGamePause pauseController, IAudioTimeSource timeSource, IReadonlyBeatmapData readonlyBeatmapData, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, IFPFCSettings fpfc)
         {
             this._platformHelper = helper;
             this._pauseController = pauseController;
             this._audioTimeSource = timeSource;
             this._difficultyBeatmap = gameplayCoreSceneSetupData.difficultyBeatmap;
+            this._fpfc = fpfc;
             // ライトショーとかやられるとマジ死ぬ
 #if VER_1_20_0
             var firstNote = readonlyBeatmapData.allBeatmapDataItems.OfType<NoteData>().FirstOrDefault();
@@ -99,6 +102,22 @@ namespace HeadDistanceTravelled
             }
             this._pauseController.didPauseEvent += this.OnDidPauseEvent;
             this._pauseController.didResumeEvent += this.OnDidResumeEvent;
+            if (this._fpfc != null) {
+                this._isfpfc = this._fpfc.Enabled;
+                this._fpfc.Changed += this.OnFPFCChanged;
+            }
+            else {
+                this._isfpfc = false;
+            }
+        }
+
+        /// <summary>
+        /// SiraUtilが入ってるときは<see cref="FirstPersonFlyingController"/>のメソッドがそもそも実行されないらしい。
+        /// </summary>
+        /// <param name="obj"></param>
+        private void OnFPFCChanged(IFPFCSettings obj)
+        {
+            this._isfpfc = obj.Enabled;
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -106,11 +125,7 @@ namespace HeadDistanceTravelled
         #region Monobehaviour Messages
         public void Start()
         {
-            var args = Environment.GetCommandLineArgs();
-            this._fpfc = args.Any(x => x.Contains("fpfc"));
-
-            this._platformHelper.GetNodePose(XRNode.Head, 0, out var hmdpos, out _);
-            this._prevHMDPosition = hmdpos;
+            this._platformHelper.GetNodePose(XRNode.Head, 0, out this._prevHMDPosition, out _);
         }
         public void Update()
         {
@@ -122,7 +137,7 @@ namespace HeadDistanceTravelled
                 this._platformHelper.GetNodePose(XRNode.Head, 0, out this._prevHMDPosition, out _);
                 return;
             }
-            if (this._fpfc) {
+            if (this._isfpfc) {
                 return;
             }
             this.RecordHMDPosition();
@@ -131,6 +146,7 @@ namespace HeadDistanceTravelled
         {
             this._pauseController.didPauseEvent -= this.OnDidPauseEvent;
             this._pauseController.didResumeEvent -= this.OnDidResumeEvent;
+            this._fpfc.Changed -= this.OnFPFCChanged;
             var data = new HDTData();
             data.Load();
             data.HeadDistanceTravelled += this._hmdDistance;
@@ -139,6 +155,6 @@ namespace HeadDistanceTravelled
             data.BeatmapResults = new ReadOnlyCollection<HDTData.BeatmapResult>(oldResults);
             data.Save();
         }
-#endregion
+        #endregion
     }
 }
