@@ -133,6 +133,8 @@
     <Compile Include="Installers\HDTGameInstaller.cs" />
     <Compile Include="Installers\HDTMenuInstaller.cs" />
     <Compile Include="Jsons\HDTData.cs" />
+    <Compile Include="Jsons\StringToBeatmapCharacteristicConverter.cs" />
+    <Compile Include="Models\EnumUtl.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Configuration\PluginConfig.cs" />
     <Compile Include="HeadDistanceTravelledController.cs" />

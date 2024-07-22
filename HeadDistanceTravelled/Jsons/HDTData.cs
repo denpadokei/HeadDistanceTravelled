@@ -1,5 +1,6 @@
 ﻿using IPA.Utilities.Async;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,6 +11,22 @@ using UnityEngine;
 
 namespace HeadDistanceTravelled.Jsons
 {
+    public enum BeatmapCharacteristic
+    {
+        [Description("Standard")]
+        LEVEL_STANDARD,
+        [Description("OneSaber")]
+        LEVEL_ONE_SABER,
+        [Description("360Degree")]
+        LEVEL_360DEGREE,
+        [Description("90Degree")]
+        LEVEL_90DEGREE,
+        [Description(nameof(Lawless))]
+        Lawless,
+        [Description(nameof(Lightshow))]
+        Lightshow
+    }
+
     public class HDTData
     {
         [JsonIgnore]
@@ -18,19 +35,20 @@ namespace HeadDistanceTravelled.Jsons
         {
             public string LevelID { get; set; }
             public string SongName { get; set; }
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Populate, Required = Required.Default)]
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore, Required = Required.Default)]
             [DefaultValue(null)]
             public string Difficurity { get; set; }
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Populate, Required = Required.Default)]
-            [DefaultValue(null)]
-            public string BeatmapCharacteristic { get; set; }
+            [JsonConverter(typeof(StringToBeatmapCharacteristicConverter))]
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore, Required = Required.Default)]
+            [DefaultValue(typeof(BeatmapCharacteristic?), null)]
+            public BeatmapCharacteristic? BeatmapCharacteristic { get; set; }
             public float Distance { get; set; }
             public DateTime CreatedAt { get; set; }
             public BeatmapResult()
             {
 
             }
-            public BeatmapResult(string levelID, string songName, string diff, string beatmapChara, float Distance, DateTime now)
+            public BeatmapResult(string levelID, string songName, string diff, BeatmapCharacteristic beatmapChara, float Distance, DateTime now)
             {
                 this.LevelID = levelID;
                 this.SongName = songName;

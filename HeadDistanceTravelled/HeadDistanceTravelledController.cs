@@ -1,4 +1,6 @@
 ﻿using HeadDistanceTravelled.Jsons;
+using HeadDistanceTravelled.Models;
+using IPA.Utilities;
 using SiraUtil.Tools.FPFC;
 using System;
 using System.Collections.ObjectModel;
@@ -150,7 +152,8 @@ namespace HeadDistanceTravelled
             var data = HDTData.Instance;
             data.Load();
             var oldResults = data.BeatmapResults.ToList();
-            oldResults.Add(new HDTData.BeatmapResult(this._difficultyBeatmap.level.levelID, this._difficultyBeatmap.level.songName, this._difficultyBeatmap.difficulty.ToString(), this._difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.descriptionLocalizationKey, this._hmdDistance, DateTime.Now));
+            var chara = EnumUtl.GetEnumValue<BeatmapCharacteristic>(this._difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.characteristicNameLocalizationKey);
+            oldResults.Add(new HDTData.BeatmapResult(this._difficultyBeatmap.level.levelID, this._difficultyBeatmap.level.songName, this._difficultyBeatmap.difficulty.ToString(), chara, this._hmdDistance, DateTime.Now));
             data.BeatmapResults = new ReadOnlyCollection<HDTData.BeatmapResult>(oldResults);
             data.UpdateTotalDistance();
             data.Save();
