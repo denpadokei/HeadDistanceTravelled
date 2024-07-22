@@ -1,34 +1,34 @@
-﻿using BeatSaberMarkupLanguage.Attributes;
+﻿using BeatSaberMarkupLanguage;
+using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HeadDistanceTravelled.Configuration;
 using HeadDistanceTravelled.Jsons;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Xml;
 using TMPro;
 using UnityEngine;
-using static AlphabetScrollInfo;
+
 
 namespace HeadDistanceTravelled.Views
 {
     [HotReload]
-    public class HeadDistanceTravelledMainViewController : ViewControllerBase
+    public class HeadDistanceTravelledLeftViewController : ViewControllerBase
     {
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プロパティ
         /// <summary>説明 を取得、設定</summary>
-        private string _hmdDistance = "";
-        [UIValue("hmd-distance")]
+        private string _todaysDistance;
         /// <summary>説明 を取得、設定</summary>
-        public string HMDDistance
+        [UIValue("today-distance")]
+        public string TodaysDistance
         {
-            get => this._hmdDistance;
+            get => this._todaysDistance;
 
-            set => this.SetProperty(ref this._hmdDistance, value);
+            set => this.SetProperty(ref this._todaysDistance, value);
         }
 
         /// <summary>説明 を取得、設定</summary>
@@ -40,16 +40,6 @@ namespace HeadDistanceTravelled.Views
             get => this._show;
 
             set => this.SetProperty(ref this._show, value);
-        }
-
-        /// <summary>説明 を取得、設定</summary>
-        private float _fontSize;
-        /// <summary>説明 を取得、設定</summary>
-        public float FontSize
-        {
-            get => this._fontSize;
-
-            set => this.SetProperty(ref this._fontSize, value);
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -85,6 +75,12 @@ namespace HeadDistanceTravelled.Views
             HDTData.Instance.OnLoaded += this.Instance_OnLoaded;
         }
 
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            HDTData.Instance.OnLoaded -= this.Instance_OnLoaded;
+        }
+
         public void OnEnable()
         {
             if (this._waitAndSetOnEnable && _textMeshProUGUI) {
@@ -95,19 +91,27 @@ namespace HeadDistanceTravelled.Views
             }
         }
 
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-            HDTData.Instance.OnLoaded -= this.Instance_OnLoaded;
-        }
-
         private void Instance_OnLoaded(object obj)
         {
-            this.Show = PluginConfig.Instance.DisplayViews.Any(x => x == PluginConfig.DisplayView.Main);
+            this.Show = PluginConfig.Instance.DisplayViews.Any(x => x == PluginConfig.DisplayView.Left);
             if (obj is HDTData data) {
-                this.HMDDistance = $"<size=150%>{data.HeadDistanceTravelled:#.000}</size> m";
+#if DEBUG
+                var dummyDay = data.BeatmapResults.LastOrDefault(x => 0 < x.Distance).CreatedAt.Date;
+                var todayDt = data.BeatmapResults.Where(x => dummyDay <= x.CreatedAt && x.CreatedAt < dummyDay.AddDays(1)).Sum(x => x.Distance);
+                this.TodaysDistance = $"<size=150%>{todayDt:#.000}</size> m";
+#else
+                var todayDt = data.BeatmapResults.Where(x => DateTime.Now.Date <= x.CreatedAt && x.CreatedAt < DateTime.Now.Date.AddDays(1)).Sum(x => x.Distance);
+                this.TodaysDistance = $"<size=150%>{todayDt:#.000}</size> m";
+#endif
             }
         }
+
+        //public void OnEnable()
+        //{
+        //    if (_waitAndSetOnEnable) {
+        //        var text = _textMeshProUGUI.gameObject.GetComponentInChildren<FormattableText>();
+        //    }
+        //}
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プライベートメソッド
@@ -130,9 +134,6 @@ namespace HeadDistanceTravelled.Views
             catch (System.Exception e) {
                 Plugin.Log.Error(e);
             }
-
-            var data = HDTData.Instance;
-            data.Load();
         }
 
         private IEnumerator WaitAndSet(TextMeshProUGUI text, bool enableAutoSizing)
@@ -148,7 +149,7 @@ namespace HeadDistanceTravelled.Views
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
-        [UIObject("distance-text2")]
+        [UIObject("distance-text1")]
         private GameObject _textMeshProUGUI;
         private bool _waitAndSetOnEnable = false;
         #endregion

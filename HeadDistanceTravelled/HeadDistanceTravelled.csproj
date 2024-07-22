@@ -137,7 +137,9 @@
     <Compile Include="Configuration\PluginConfig.cs" />
     <Compile Include="HeadDistanceTravelledController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Views\Bases\ViewControllerBase.cs" />
     <Compile Include="Views\HDTSettingView.cs" />
+    <Compile Include="Views\HeadDistanceTravelledLeftViewController.cs" />
     <Compile Include="Views\HeadDistanceTravelledMainViewController.cs" />
     <Compile Include="Views\HMDDistanceFloatingScreen.cs" />
   </ItemGroup>
@@ -155,6 +157,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\HDTSettingView.bsml">
       <DependentUpon>HDTSettingView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\HeadDistanceTravelledLeftViewController.bsml">
+      <DependentUpon>HeadDistanceTravelledLeftViewController.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

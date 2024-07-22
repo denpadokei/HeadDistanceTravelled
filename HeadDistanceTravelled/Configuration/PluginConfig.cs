@@ -1,4 +1,7 @@
 ﻿using IPA.Config.Stores;
+using IPA.Config.Stores.Attributes;
+using IPA.Config.Stores.Converters;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
@@ -8,6 +11,8 @@ namespace HeadDistanceTravelled.Configuration
     {
         public static PluginConfig Instance { get; set; }
         public virtual bool ShowDistanceOnHMD { get; set; } = true; // Must be 'virtual' if you want BSIPA to detect a value change and save the config automatically.
+        [UseConverter(typeof(ListConverter<DisplayView>))]
+        public virtual List<DisplayView> DisplayViews { get; set; } = new List<DisplayView> { DisplayView.Main, DisplayView.Left };
 
         /// <summary>
         /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
@@ -31,6 +36,13 @@ namespace HeadDistanceTravelled.Configuration
         public virtual void CopyFrom(PluginConfig other)
         {
             // This instance's members populated from other
+        }
+
+        public enum DisplayView
+        {
+            Main,
+            Left,
+            Right,
         }
     }
 }

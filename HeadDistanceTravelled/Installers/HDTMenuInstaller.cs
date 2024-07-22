@@ -9,6 +9,7 @@ namespace HeadDistanceTravelled.Installers
         {
             this.Container.BindInterfacesAndSelfTo<HDTFlowCoordinator>().FromNewComponentOnNewGameObject().AsSingle().NonLazy();
             this.Container.BindInterfacesAndSelfTo<HeadDistanceTravelledMainViewController>().FromNewComponentAsViewController().AsSingle();
+            this.Container.BindInterfacesAndSelfTo<HeadDistanceTravelledLeftViewController>().FromNewComponentAsViewController().AsSingle();
             this.Container.BindInterfacesAndSelfTo<HDTSettingView>().FromNewComponentAsViewController().AsSingle().NonLazy();
         }
     }

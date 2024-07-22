@@ -147,12 +147,11 @@ namespace HeadDistanceTravelled
             this._pauseController.didPauseEvent -= this.OnDidPauseEvent;
             this._pauseController.didResumeEvent -= this.OnDidResumeEvent;
             this._fpfc.Changed -= this.OnFPFCChanged;
-            var data = new HDTData();
-            data.Load();
-            data.HeadDistanceTravelled += this._hmdDistance;
+            var data = HDTData.Instance;
             var oldResults = data.BeatmapResults.ToList();
-            oldResults.Add(new HDTData.BeatmapResult(this._difficultyBeatmap.level.levelID, this._difficultyBeatmap.level.songName, this._hmdDistance, DateTime.Now));
+            oldResults.Add(new HDTData.BeatmapResult(this._difficultyBeatmap.level.levelID, this._difficultyBeatmap.level.songName, this._difficultyBeatmap.difficulty.ToString(), this._difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.descriptionLocalizationKey, this._hmdDistance, DateTime.Now));
             data.BeatmapResults = new ReadOnlyCollection<HDTData.BeatmapResult>(oldResults);
+            data.UpdateTotalDistance();
             data.Save();
         }
         #endregion

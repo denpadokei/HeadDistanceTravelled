@@ -18,7 +18,7 @@ namespace HeadDistanceTravelled
             if (firstActivation) {
                 this.SetTitle("HeadDistanceTravelled");
                 this.showBackButton = true;
-                this.ProvideInitialViewControllers(this._viewController);
+                this.ProvideInitialViewControllers(this._mainViewController, _leftViewController);
             }
         }
         protected override void BackButtonWasPressed(ViewController topViewController)
@@ -49,15 +49,17 @@ namespace HeadDistanceTravelled
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
-        private HeadDistanceTravelledMainViewController _viewController;
+        private HeadDistanceTravelledMainViewController _mainViewController;
+        private HeadDistanceTravelledLeftViewController _leftViewController;
         private MenuButton _menuButton;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constractor(HeadDistanceTravelledMainViewController viewController)
+        public void Constractor(HeadDistanceTravelledMainViewController mainViewController, HeadDistanceTravelledLeftViewController leftViewController)
         {
-            this._viewController = viewController;
+            this._mainViewController = mainViewController;
+            this._leftViewController = leftViewController;
         }
         #endregion
     }
