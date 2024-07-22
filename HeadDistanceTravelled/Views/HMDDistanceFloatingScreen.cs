@@ -1,11 +1,16 @@
 ﻿using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.FloatingScreen;
 using BeatSaberMarkupLanguage.ViewControllers;
+using HeadDistanceTravelled.Configuration;
+using HeadDistanceTravelled.Jsons;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using Zenject;
+using static HeadDistanceTravelled.Jsons.HDTData;
 
 namespace HeadDistanceTravelled.Views
 {
@@ -75,7 +80,7 @@ namespace HeadDistanceTravelled.Views
         }
         private void CreateDistanceText()
         {
-            this.HMDDistanceText = $"{this._controller.HMDDistance:#0.00} <size=50%>m</size>";
+            this.HMDDistanceText = $"{this._controller.HMDDistance + this._startDistance:#0.00} <size=50%>m</size>";
         }
 
         protected override void OnDestroy()
@@ -91,13 +96,29 @@ namespace HeadDistanceTravelled.Views
         private IHeadDistanceTravelledController _controller;
         private FloatingScreen _floatingScreen;
         private static readonly Vector3 s_localOffset= new Vector3(0, 0.4f, 0);
+        private float _startDistance = 0;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
         public void Constarctor(IHeadDistanceTravelledController controller)
         {
+            HDTData.Instance.Load();
             this._controller = controller;
+            switch (PluginConfig.Instance.DistanceTypeValue) {
+                case PluginConfig.DistanceType.Song:
+                    _startDistance = 0;
+                    break;
+                case PluginConfig.DistanceType.Today:
+                    _startDistance = HDTData.Instance.BeatmapResults.Where(x => DateTime.Now.Date <= x.CreatedAt && x.CreatedAt < DateTime.Now.Date.AddDays(1)).Sum(x => x.Distance);
+                    break;
+                case PluginConfig.DistanceType.Total:
+                    HDTData.Instance.UpdateTotalDistance();
+                    _startDistance = HDTData.Instance.HeadDistanceTravelled;
+                    break;
+                default:
+                    break;
+            }
         }
         #endregion
     }

@@ -13,6 +13,8 @@ namespace HeadDistanceTravelled.Configuration
         public virtual bool ShowDistanceOnHMD { get; set; } = true; // Must be 'virtual' if you want BSIPA to detect a value change and save the config automatically.
         [UseConverter(typeof(ListConverter<DisplayView>))]
         public virtual List<DisplayView> DisplayViews { get; set; } = new List<DisplayView> { DisplayView.Main, DisplayView.Left };
+        [UseConverter(typeof(EnumConverter<DistanceType>))]
+        public virtual DistanceType DistanceTypeValue { get; set; } = DistanceType.Song;
 
         /// <summary>
         /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
@@ -43,6 +45,13 @@ namespace HeadDistanceTravelled.Configuration
             Main,
             Left,
             Right,
+        }
+
+        public enum DistanceType
+        {
+            Song,
+            Today,
+            Total
         }
     }
 }
