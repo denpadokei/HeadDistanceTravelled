@@ -148,6 +148,7 @@ namespace HeadDistanceTravelled
             this._pauseController.didResumeEvent -= this.OnDidResumeEvent;
             this._fpfc.Changed -= this.OnFPFCChanged;
             var data = HDTData.Instance;
+            data.Load();
             var oldResults = data.BeatmapResults.ToList();
             oldResults.Add(new HDTData.BeatmapResult(this._difficultyBeatmap.level.levelID, this._difficultyBeatmap.level.songName, this._difficultyBeatmap.difficulty.ToString(), this._difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.descriptionLocalizationKey, this._hmdDistance, DateTime.Now));
             data.BeatmapResults = new ReadOnlyCollection<HDTData.BeatmapResult>(oldResults);

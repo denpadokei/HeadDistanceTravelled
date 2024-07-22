@@ -12,6 +12,7 @@ namespace HeadDistanceTravelled.Jsons
 {
     public class HDTData
     {
+        [JsonIgnore]
         public static HDTData Instance { get; } = new HDTData();
         public class BeatmapResult
         {
@@ -42,6 +43,7 @@ namespace HeadDistanceTravelled.Jsons
         public float HeadDistanceTravelled { get; set; }
         public ReadOnlyCollection<BeatmapResult> BeatmapResults { get; set; }
 
+        
         public event Action<object> OnLoaded;
         public event Action<object> OnSaved;
 
