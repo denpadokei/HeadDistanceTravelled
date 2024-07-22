@@ -31,6 +31,18 @@ namespace HeadDistanceTravelled.Models
         public static bool TryGetEnumValue<T>(string txt, out T val) where T : Enum 
         {
             val = default;
+            if (Enum.GetValues(typeof(T)).OfType<T>().Any(x => string.Equals(x.ToString(), txt))) {
+                val = Enum.GetValues(typeof(T)).OfType<T>().FirstOrDefault(x => string.Equals(x.ToString(), txt));
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        public static bool TryGetEnumValueUserDescription<T>(string txt, out T val) where T : Enum
+        {
+            val = default;
             if (Enum.GetValues(typeof(T)).OfType<T>().Any(x => string.Equals(x.GetDescription(), txt))) {
                 val = Enum.GetValues(typeof(T)).OfType<T>().FirstOrDefault(x => string.Equals(x.GetDescription(), txt));
                 return true;

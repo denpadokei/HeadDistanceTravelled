@@ -37,7 +37,7 @@ namespace HeadDistanceTravelled.Jsons
         {
             
             try {
-                if (EnumUtl.TryGetEnumValue<BeatmapCharacteristic>(base.ReadJson(reader, objectType, existingValue, serializer)?.ToString(), out var val)) {
+                if (EnumUtl.TryGetEnumValueUserDescription<BeatmapCharacteristic>(base.ReadJson(reader, objectType, existingValue, serializer)?.ToString(), out var val)) {
                     return val;
                 }
                 else {
