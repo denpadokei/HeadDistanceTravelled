@@ -1,6 +1,4 @@
-﻿using IPA.Utilities.Async;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,6 +11,8 @@ namespace HeadDistanceTravelled.Jsons
 {
     public enum BeatmapCharacteristic
     {
+        [Description(null)]
+        UnknownValue = -1,
         [Description("Standard")]
         LEVEL_STANDARD,
         [Description("OneSaber")]
@@ -48,7 +48,7 @@ namespace HeadDistanceTravelled.Jsons
             {
 
             }
-            public BeatmapResult(string levelID, string songName, string diff, BeatmapCharacteristic beatmapChara, float Distance, DateTime now)
+            public BeatmapResult(string levelID, string songName, string diff, BeatmapCharacteristic? beatmapChara, float Distance, DateTime now)
             {
                 this.LevelID = levelID;
                 this.SongName = songName;
@@ -61,7 +61,7 @@ namespace HeadDistanceTravelled.Jsons
         public float HeadDistanceTravelled { get; set; }
         public ReadOnlyCollection<BeatmapResult> BeatmapResults { get; set; }
 
-        
+
         public event Action<object> OnLoaded;
         public event Action<object> OnSaved;
 

@@ -28,9 +28,16 @@ namespace HeadDistanceTravelled.Models
 
     internal class EnumUtl
     {
-        public static T GetEnumValue<T>(string txt) where T : Enum 
+        public static bool TryGetEnumValue<T>(string txt, out T val) where T : Enum 
         {
-            return Enum.GetValues(typeof(T)).OfType<T>().FirstOrDefault(x => string.Equals(x.GetDescription(), txt));
+            val = default;
+            if (Enum.GetValues(typeof(T)).OfType<T>().Any(x => string.Equals(x.GetDescription(), txt))) {
+                val = Enum.GetValues(typeof(T)).OfType<T>().FirstOrDefault(x => string.Equals(x.GetDescription(), txt));
+                return true;
+            }
+            else {
+                return false;
+            }
         }
     }
 }

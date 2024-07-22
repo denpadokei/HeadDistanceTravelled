@@ -152,8 +152,8 @@ namespace HeadDistanceTravelled
             var data = HDTData.Instance;
             data.Load();
             var oldResults = data.BeatmapResults.ToList();
-            var chara = EnumUtl.GetEnumValue<BeatmapCharacteristic>(this._difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.characteristicNameLocalizationKey);
-            oldResults.Add(new HDTData.BeatmapResult(this._difficultyBeatmap.level.levelID, this._difficultyBeatmap.level.songName, this._difficultyBeatmap.difficulty.ToString(), chara, this._hmdDistance, DateTime.Now));
+            var include = EnumUtl.TryGetEnumValue<BeatmapCharacteristic>(this._difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.characteristicNameLocalizationKey, out var chara);
+            oldResults.Add(new HDTData.BeatmapResult(this._difficultyBeatmap.level.levelID, this._difficultyBeatmap.level.songName, this._difficultyBeatmap.difficulty.ToString(), include ? (BeatmapCharacteristic?)chara : null, this._hmdDistance, DateTime.Now));
             data.BeatmapResults = new ReadOnlyCollection<HDTData.BeatmapResult>(oldResults);
             data.UpdateTotalDistance();
             data.Save();
