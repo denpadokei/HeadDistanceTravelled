@@ -31,6 +31,7 @@ namespace HeadDistanceTravelled
             Log.Info("HeadDistanceTravelled initialized.");
             Configuration.PluginConfig.Instance = conf.Generated<Configuration.PluginConfig>();
             Log.Debug("Config loaded");
+            Log.Info($"LaunchDate:{LastLaunchDate}");
             zenjector.Install<HDTMenuInstaller>(Location.Menu);
             zenjector.Install<HDTGameInstaller>(Location.Player);
         }
