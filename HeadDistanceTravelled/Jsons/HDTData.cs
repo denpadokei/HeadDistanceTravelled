@@ -27,6 +27,7 @@ namespace HeadDistanceTravelled.Jsons
         Lightshow
     }
 
+    [Obsolete]
     public class HDTData
     {
         [JsonIgnore]

@@ -3,6 +3,6 @@
 	>
 	<vertical horizontal-fit="PreferredSize" active="~show-view" preferred-width="100" >
 		<text text='HeadDistanceTravelled - Total distance' />
-		<text id="distance-text2" text="~hmd-distance" font-size="1" overflow-mode="Overflow" align="Center"/>
+		<text id="distance-text2" text="~hmd-distance" font-size="40" overflow-mode="Overflow" align="Center"/>
 	</vertical>
 </bg>

@@ -1,8 +1,11 @@
-﻿using HeadDistanceTravelled.Installers;
+﻿using HeadDistanceTravelled.Databases;
+using HeadDistanceTravelled.Installers;
+using HeadDistanceTravelled.Jsons;
 using IPA;
 using IPA.Config;
 using IPA.Config.Stores;
 using SiraUtil.Zenject;
+using System;
 using IPALogger = IPA.Logging.Logger;
 
 namespace HeadDistanceTravelled
@@ -12,6 +15,8 @@ namespace HeadDistanceTravelled
     {
         internal static Plugin Instance { get; private set; }
         internal static IPALogger Log { get; private set; }
+
+        public static DateTime LastLaunchDate { get; } = DateTime.Now.Date;
 
         [Init]
         /// <summary>
@@ -34,6 +39,9 @@ namespace HeadDistanceTravelled
         public void OnApplicationStart()
         {
             Log.Debug("OnApplicationStart");
+            if (!HDTDatabase.DBExits()) {
+                SaveDataConvert.Upgrade();
+            }
         }
 
         [OnExit]

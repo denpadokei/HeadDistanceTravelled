@@ -1,4 +1,5 @@
-﻿using HeadDistanceTravelled.Jsons;
+﻿using HeadDistanceTravelled.Databases;
+using HeadDistanceTravelled.Jsons;
 using HeadDistanceTravelled.Models;
 using IPA.Utilities;
 using SiraUtil.Tools.FPFC;
@@ -149,14 +150,18 @@ namespace HeadDistanceTravelled
             this._pauseController.didPauseEvent -= this.OnDidPauseEvent;
             this._pauseController.didResumeEvent -= this.OnDidResumeEvent;
             this._fpfc.Changed -= this.OnFPFCChanged;
-            var data = HDTData.Instance;
-            data.Load();
-            var oldResults = data.BeatmapResults.ToList();
-            var include = EnumUtl.TryGetEnumValue<BeatmapCharacteristic>(this._difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.characteristicNameLocalizationKey, out var chara);
-            oldResults.Add(new HDTData.BeatmapResult(this._difficultyBeatmap.level.levelID, this._difficultyBeatmap.level.songName, this._difficultyBeatmap.difficulty.ToString(), include ? (BeatmapCharacteristic?)chara : null, this._hmdDistance, DateTime.Now));
-            data.BeatmapResults = new ReadOnlyCollection<HDTData.BeatmapResult>(oldResults);
-            data.UpdateTotalDistance();
-            data.Save();
+            using (var db = new HDTDatabase()) {
+                var include = EnumUtl.TryGetEnumValue<BeatmapCharacteristic>(this._difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.characteristicNameLocalizationKey, out var chara);
+                db.Insert(new DistanceInformation
+                {
+                    LevelID = this._difficultyBeatmap.level.levelID,
+                    SongName = this._difficultyBeatmap.level.songName,
+                    Difficurity = this._difficultyBeatmap.difficulty.ToString(),
+                    BeatmapCharacteristicTextId = include ? (int)chara : (int)BeatmapCharacteristic.UnknownValue,
+                    Distance = this._hmdDistance,
+                    CreatedAt = DateTime.Now,
+                });
+            }
         }
         #endregion
     }

@@ -2,6 +2,7 @@
 using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HeadDistanceTravelled.Configuration;
+using HeadDistanceTravelled.Databases;
 using HeadDistanceTravelled.Jsons;
 using System.Collections;
 using System.Collections.Generic;
@@ -60,6 +61,17 @@ namespace HeadDistanceTravelled.Views
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // オーバーライドメソッド
+        protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
+        {
+            base.DidActivate(firstActivation, addedToHierarchy, screenSystemEnabling);
+            this.Show = PluginConfig.Instance.DisplayViews.Any(x => x == PluginConfig.DisplayView.Main);
+            using (var db = new HDTDatabase()) {
+                var todayDt = db.Find<DistanceInformation>(x => true).Sum(x => x.Distance);
+                this.HMDDistance = $"<size=150%>{todayDt:#.000}</size> m";
+                Plugin.Log.Info(this.HMDDistance);
+            }
+        }
+
         protected override void OnPropertyChanged(PropertyChangedEventArgs e)
         {
             var text = _textMeshProUGUI.gameObject.GetComponentInChildren<FormattableText>();
@@ -80,10 +92,7 @@ namespace HeadDistanceTravelled.Views
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // パブリックメソッド
-        public void Awake()
-        {
-            HDTData.Instance.OnLoaded += this.Instance_OnLoaded;
-        }
+        
 
         public void OnEnable()
         {
@@ -92,20 +101,6 @@ namespace HeadDistanceTravelled.Views
                     && PluginConfig.Instance.DisplayViews.FirstOrDefault() == PluginConfig.DisplayView.Left;
                 var text = _textMeshProUGUI.gameObject.GetComponentInChildren<FormattableText>();
                 this.StartCoroutine(this.WaitAndSet(text, !b));
-            }
-        }
-
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-            HDTData.Instance.OnLoaded -= this.Instance_OnLoaded;
-        }
-
-        private void Instance_OnLoaded(object obj)
-        {
-            this.Show = PluginConfig.Instance.DisplayViews.Any(x => x == PluginConfig.DisplayView.Main);
-            if (obj is HDTData data) {
-                this.HMDDistance = $"<size=150%>{data.HeadDistanceTravelled:#.000}</size> m";
             }
         }
         #endregion
@@ -130,9 +125,6 @@ namespace HeadDistanceTravelled.Views
             catch (System.Exception e) {
                 Plugin.Log.Error(e);
             }
-
-            var data = HDTData.Instance;
-            data.Load();
         }
 
         private IEnumerator WaitAndSet(TextMeshProUGUI text, bool enableAutoSizing)

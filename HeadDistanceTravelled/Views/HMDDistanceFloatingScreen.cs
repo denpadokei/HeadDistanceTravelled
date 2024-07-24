@@ -2,6 +2,7 @@
 using BeatSaberMarkupLanguage.FloatingScreen;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HeadDistanceTravelled.Configuration;
+using HeadDistanceTravelled.Databases;
 using HeadDistanceTravelled.Jsons;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using Zenject;
-using static HeadDistanceTravelled.Jsons.HDTData;
 
 namespace HeadDistanceTravelled.Views
 {
@@ -103,21 +103,21 @@ namespace HeadDistanceTravelled.Views
         [Inject]
         public void Constarctor(IHeadDistanceTravelledController controller)
         {
-            HDTData.Instance.Load();
             this._controller = controller;
-            switch (PluginConfig.Instance.DistanceTypeValue) {
-                case PluginConfig.DistanceType.Song:
-                    _startDistance = 0;
-                    break;
-                case PluginConfig.DistanceType.Today:
-                    _startDistance = HDTData.Instance.BeatmapResults.Where(x => DateTime.Now.Date <= x.CreatedAt && x.CreatedAt < DateTime.Now.Date.AddDays(1)).Sum(x => x.Distance);
-                    break;
-                case PluginConfig.DistanceType.Total:
-                    HDTData.Instance.UpdateTotalDistance();
-                    _startDistance = HDTData.Instance.HeadDistanceTravelled;
-                    break;
-                default:
-                    break;
+            using (var db = new HDTDatabase()) {
+                switch (PluginConfig.Instance.DistanceTypeValue) {
+                    case PluginConfig.DistanceType.Song:
+                        _startDistance = 0;
+                        break;
+                    case PluginConfig.DistanceType.Today:
+                        _startDistance = db.Find<DistanceInformation>(x => Plugin.LastLaunchDate <= x.CreatedAt).Sum(x => x.Distance);
+                        break;
+                    case PluginConfig.DistanceType.Total:
+                        _startDistance = db.Find<DistanceInformation>(x => true).Sum(x => x.Distance);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         #endregion

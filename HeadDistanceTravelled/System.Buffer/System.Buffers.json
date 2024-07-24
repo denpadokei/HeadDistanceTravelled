@@ -1,0 +1,12 @@
+﻿{
+  "$schema": "https://raw.githubusercontent.com/bsmg/BSIPA-MetadataFileSchema/master/Schema.json",
+  "id": "System.Buffers",
+  "name": "System.Buffers",
+  "author": "Microsoft",
+  "version": "4.5.1",
+  "description": "",
+  "gameVersion": "1.20.0",
+  "files": [
+    "Libs/System.Buffers.dll"
+  ]
+}

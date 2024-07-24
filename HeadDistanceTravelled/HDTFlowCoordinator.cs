@@ -1,5 +1,6 @@
 ﻿using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.MenuButtons;
+using HeadDistanceTravelled.Jsons;
 using HeadDistanceTravelled.Views;
 using HMUI;
 using Zenject;

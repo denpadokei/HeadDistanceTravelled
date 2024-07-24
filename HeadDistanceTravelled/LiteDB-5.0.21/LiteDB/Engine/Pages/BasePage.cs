@@ -537,7 +537,7 @@ namespace LiteDB.Engine
             LOG($"defrag page #{this.PageID} (fragments: {this.FragmentedBytes})", "DISK");
 
             // first get all segments inside this page sorted by position (position, index)
-            var segments = new SortedList<ushort, byte>();
+            var segments = new System.Collections.Generic.SortedList<ushort, byte>();
 
             // use int to avoid byte overflow
             for (int index = 0; index <= this.HighestIndex; index++)

@@ -1,6 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyVersion>0.1.0</AssemblyVersion>
+    <FileVersion>0.1.0</FileVersion>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <PackageVersion>0.1.0</PackageVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
@@ -10,7 +14,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>HeadDistanceTravelled</RootNamespace>
     <AssemblyName>HeadDistanceTravelled</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    
     <FileAlignment>512</FileAlignment>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>portable</DebugType>
@@ -20,11 +24,19 @@
     <!--<PathMap>$(AppOutputBase)=X:\$(AssemblyName)\</PathMap>-->
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <DefineConstants>HAVE_SHA1_MANAGED</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;VER_1_20_0</DefineConstants>
+    
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
@@ -32,6 +44,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DefineConstants>VER_1_20_0</DefineConstants>
+    
   </PropertyGroup>
   <PropertyGroup Condition="$(DefineConstants.Contains('CIBuild')) OR '$(NCrunch)' == '1'">
     <DisableCopyToPlugins>True</DisableCopyToPlugins>
@@ -40,6 +53,29 @@
     <DisableCopyToPlugins>True</DisableCopyToPlugins>
     <DisableZipRelease>True</DisableZipRelease>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="LiteDB-5.0.21\ConsoleApp1\**" />
+    <Compile Remove="LiteDB-5.0.21\LiteDB.Benchmarks\**" />
+    <Compile Remove="LiteDB-5.0.21\LiteDB.Shell\**" />
+    <Compile Remove="LiteDB-5.0.21\LiteDB.Stress\**" />
+    <Compile Remove="LiteDB-5.0.21\LiteDB.Tests\**" />
+    <EmbeddedResource Remove="LiteDB-5.0.21\ConsoleApp1\**" />
+    <EmbeddedResource Remove="LiteDB-5.0.21\LiteDB.Benchmarks\**" />
+    <EmbeddedResource Remove="LiteDB-5.0.21\LiteDB.Shell\**" />
+    <EmbeddedResource Remove="LiteDB-5.0.21\LiteDB.Stress\**" />
+    <EmbeddedResource Remove="LiteDB-5.0.21\LiteDB.Tests\**" />
+    <None Remove="LiteDB-5.0.21\ConsoleApp1\**" />
+    <None Remove="LiteDB-5.0.21\LiteDB.Benchmarks\**" />
+    <None Remove="LiteDB-5.0.21\LiteDB.Shell\**" />
+    <None Remove="LiteDB-5.0.21\LiteDB.Stress\**" />
+    <None Remove="LiteDB-5.0.21\LiteDB.Tests\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="LiteDB-5.0.21\.gitignore" />
+    <None Remove="LiteDB-5.0.21\appveyor.yml" />
+    <None Remove="LiteDB-5.0.21\icon_64x64.png" />
+    <None Remove="LiteDB-5.0.21\README.md" />
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="BeatmapCore, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <Private>False</Private>
@@ -61,12 +97,6 @@
       <HintPath>$(BeatSaberDir)\Plugins\SiraUtil.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
     <Reference Include="Main">
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Main.dll</HintPath>
       <Private>False</Private>
@@ -127,24 +157,7 @@
       <SpecificVersion>False</SpecificVersion>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="HDTFlowCoordinator.cs" />
-    <Compile Include="IHeadDistanceTravelledController.cs" />
-    <Compile Include="Installers\HDTGameInstaller.cs" />
-    <Compile Include="Installers\HDTMenuInstaller.cs" />
-    <Compile Include="Jsons\HDTData.cs" />
-    <Compile Include="Jsons\StringToBeatmapCharacteristicConverter.cs" />
-    <Compile Include="Models\EnumUtl.cs" />
-    <Compile Include="Plugin.cs" />
-    <Compile Include="Configuration\PluginConfig.cs" />
-    <Compile Include="HeadDistanceTravelledController.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Views\Bases\ViewControllerBase.cs" />
-    <Compile Include="Views\HDTSettingView.cs" />
-    <Compile Include="Views\HeadDistanceTravelledLeftViewController.cs" />
-    <Compile Include="Views\HeadDistanceTravelledMainViewController.cs" />
-    <Compile Include="Views\HMDDistanceFloatingScreen.cs" />
-  </ItemGroup>
+  
   <ItemGroup>
     <EmbeddedResource Include="manifest.json" />
   </ItemGroup>
@@ -163,6 +176,13 @@
     <EmbeddedResource Include="Views\HeadDistanceTravelledLeftViewController.bsml">
       <DependentUpon>HeadDistanceTravelledLeftViewController.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="LiteDB-5.0.21\LiteDB\LiteDB.csproj" />
+    <None Include="LiteDB-5.0.21\LiteDB\LiteDB.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <OutputCopy Include="$(OutputPath)HeadDistanceTravelled.dll" OutputPath="Plugins\HeadDistanceTravelled.dll" />
+    <OutputCopy Include="$(OutputPath)System.Buffers.dll" OutputPath="Libs\System.Buffers.dll" />
+    <OutputCopy Include="$(OutputPath)System.Buffer\System.Buffers.json" OutputPath="Plugins\System.Buffers.manifest" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BeatSaberModdingTools.Tasks">
@@ -170,6 +190,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.Buffers" Version="4.5.1">
+      <IncludeAssets>all</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Update="System.Buffer\System.Buffers.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

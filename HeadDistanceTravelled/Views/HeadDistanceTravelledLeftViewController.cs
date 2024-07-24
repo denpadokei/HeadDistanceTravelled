@@ -3,6 +3,7 @@ using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HeadDistanceTravelled.Configuration;
+using HeadDistanceTravelled.Databases;
 using HeadDistanceTravelled.Jsons;
 using System;
 using System.Collections;
@@ -50,6 +51,17 @@ namespace HeadDistanceTravelled.Views
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // オーバーライドメソッド
+        protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
+        {
+            base.DidActivate(firstActivation, addedToHierarchy, screenSystemEnabling);
+            this.Show = PluginConfig.Instance.DisplayViews.Any(x => x == PluginConfig.DisplayView.Left);
+            using (var db = new HDTDatabase()) {
+                var todayDt = db.Find<DistanceInformation>(x => Plugin.LastLaunchDate <= x.CreatedAt).Sum(x => x.Distance);
+                this.TodaysDistance = $"<size=150%>{todayDt:#.000}</size> m";
+                Plugin.Log.Info(this.TodaysDistance);
+            }
+        }
+
         protected override void OnPropertyChanged(PropertyChangedEventArgs e)
         {
             var text = _textMeshProUGUI.gameObject.GetComponentInChildren<FormattableText>();
@@ -70,16 +82,7 @@ namespace HeadDistanceTravelled.Views
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // パブリックメソッド
-        public void Awake()
-        {
-            HDTData.Instance.OnLoaded += this.Instance_OnLoaded;
-        }
-
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-            HDTData.Instance.OnLoaded -= this.Instance_OnLoaded;
-        }
+        
 
         public void OnEnable()
         {
@@ -90,28 +93,6 @@ namespace HeadDistanceTravelled.Views
                 this.StartCoroutine(this.WaitAndSet(text, !b));
             }
         }
-
-        private void Instance_OnLoaded(object obj)
-        {
-            this.Show = PluginConfig.Instance.DisplayViews.Any(x => x == PluginConfig.DisplayView.Left);
-            if (obj is HDTData data) {
-#if DEBUG
-                var dummyDay = data.BeatmapResults.LastOrDefault(x => 0 < x.Distance).CreatedAt.Date;
-                var todayDt = data.BeatmapResults.Where(x => dummyDay <= x.CreatedAt && x.CreatedAt < dummyDay.AddDays(1)).Sum(x => x.Distance);
-                this.TodaysDistance = $"<size=150%>{todayDt:#.000}</size> m";
-#else
-                var todayDt = data.BeatmapResults.Where(x => DateTime.Now.Date <= x.CreatedAt && x.CreatedAt < DateTime.Now.Date.AddDays(1)).Sum(x => x.Distance);
-                this.TodaysDistance = $"<size=150%>{todayDt:#.000}</size> m";
-#endif
-            }
-        }
-
-        //public void OnEnable()
-        //{
-        //    if (_waitAndSetOnEnable) {
-        //        var text = _textMeshProUGUI.gameObject.GetComponentInChildren<FormattableText>();
-        //    }
-        //}
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プライベートメソッド
