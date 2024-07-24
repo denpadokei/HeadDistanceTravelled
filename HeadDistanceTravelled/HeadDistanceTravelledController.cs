@@ -152,12 +152,14 @@ namespace HeadDistanceTravelled
             this._fpfc.Changed -= this.OnFPFCChanged;
             using (var db = new HDTDatabase()) {
                 var include = EnumUtl.TryGetEnumValue<BeatmapCharacteristic>(this._difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.characteristicNameLocalizationKey, out var chara);
+                var bc = db.Find<BeatmapCharacteristicText>(x => x.BeatmapCharacteristicEnumValue == chara).FirstOrDefault();
+                var unknownBc = db.Find<BeatmapCharacteristicText>(x => x.BeatmapCharacteristicEnumValue == BeatmapCharacteristic.UnknownValue).FirstOrDefault();
                 db.Insert(new DistanceInformation
                 {
                     LevelID = this._difficultyBeatmap.level.levelID,
                     SongName = this._difficultyBeatmap.level.songName,
                     Difficurity = this._difficultyBeatmap.difficulty.ToString(),
-                    BeatmapCharacteristicTextId = include ? (int)chara : (int)BeatmapCharacteristic.UnknownValue,
+                    BeatmapCharacteristicTextId = include ? bc.ID : unknownBc.ID,
                     Distance = this._hmdDistance,
                     CreatedAt = DateTime.Now,
                 });

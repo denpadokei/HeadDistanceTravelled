@@ -31,7 +31,7 @@ namespace HeadDistanceTravelled.Jsons
                         entity.BeatmapCharacteristicTextId = charaText?.ID ?? -1;
                     }
                     else {
-                        entity.BeatmapCharacteristicTextId = -1;
+                        entity.BeatmapCharacteristicTextId = dbInstance.Find<BeatmapCharacteristicText>(x => x.BeatmapCharacteristicEnumValue == BeatmapCharacteristic.UnknownValue).FirstOrDefault()?.ID ?? 0;
                     }
                     if (!string.IsNullOrEmpty(item.Difficurity)) {
                         entity.Difficurity = item.Difficurity;
