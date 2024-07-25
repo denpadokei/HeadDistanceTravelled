@@ -4,6 +4,7 @@ using BeatSaberMarkupLanguage.ViewControllers;
 using HeadDistanceTravelled.Configuration;
 using HeadDistanceTravelled.Databases;
 using HeadDistanceTravelled.Jsons;
+using HeadDistanceTravelled.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -101,7 +102,7 @@ namespace HeadDistanceTravelled.Views
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constarctor(IHeadDistanceTravelledController controller)
+        public void Constarctor(IHeadDistanceTravelledController controller, ManualMeasurementController manualMeasurementController)
         {
             this._controller = controller;
             using (var db = new HDTDatabase()) {
@@ -114,6 +115,9 @@ namespace HeadDistanceTravelled.Views
                         break;
                     case PluginConfig.DistanceType.Total:
                         _startDistance = db.Find<DistanceInformation>(x => true).Sum(x => x.Distance);
+                        break;
+                    case PluginConfig.DistanceType.Manual:
+                        _startDistance = manualMeasurementController.GetTotalDistance(manualMeasurementController.CurrentSessionGUID);
                         break;
                     default:
                         break;

@@ -25,12 +25,7 @@ namespace HeadDistanceTravelled.Views
         }
 
         [UIValue("display-type")]
-        public List<object> DisplayTypes { get; } = new List<object>
-        {
-            PluginConfig.DistanceType.Song.ToString(),
-            PluginConfig.DistanceType.Today.ToString(),
-            PluginConfig.DistanceType.Total.ToString()
-        };
+        public List<object> DisplayTypes { get; } = new List<object>(Enum.GetValues(typeof(PluginConfig.DistanceType)).OfType<PluginConfig.DistanceType>().Select(x => x.ToString()));
         [UIValue("current")]
         public string CurrentDisplayType
         {

@@ -51,7 +51,8 @@ namespace HeadDistanceTravelled.Configuration
         {
             Song,
             Today,
-            Total
+            Total,
+            Manual
         }
     }
 }
