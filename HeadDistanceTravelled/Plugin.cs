@@ -41,9 +41,6 @@ namespace HeadDistanceTravelled
         public void OnApplicationStart()
         {
             Log.Debug("OnApplicationStart");
-            if (!HDTDatabase.DBExits()) {
-                SaveDataConvert.Upgrade();
-            }
         }
 
         [OnExit]

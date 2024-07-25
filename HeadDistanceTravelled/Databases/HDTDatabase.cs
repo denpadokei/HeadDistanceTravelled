@@ -10,10 +10,11 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using Zenject;
 
 namespace HeadDistanceTravelled.Databases
 {
-    public class HDTDatabase : IDisposable
+    public class HDTDatabase : IDisposable, IHDTDatabase
     {
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プロパティ
@@ -93,10 +94,14 @@ namespace HeadDistanceTravelled.Databases
         private void Connect()
         {
             lock (_lock) {
+                if (!DBExits()) {
+                    SaveDataConvert.Upgrade(this);
+                }
                 if (this._liteDatabase != null) {
                     this._liteDatabase.Dispose();
                 }
-                this._liteDatabase = new LiteDatabase(s_dbPath);
+                this._liteDatabase = new LiteDatabase($"filename={s_dbPath};connection=Shared");
+                Plugin.Log.Debug($"database connected.");
             }
         }
 
@@ -108,6 +113,7 @@ namespace HeadDistanceTravelled.Databases
                 }
                 this._liteDatabase.Dispose();
                 this._liteDatabase = null;
+                Plugin.Log.Debug($"database is disposed.");
             }
         }
         #endregion

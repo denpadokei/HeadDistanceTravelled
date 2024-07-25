@@ -3,6 +3,7 @@ using BeatSaberMarkupLanguage.FloatingScreen;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HeadDistanceTravelled.Configuration;
 using HeadDistanceTravelled.Databases;
+using HeadDistanceTravelled.Databases.Interfaces;
 using HeadDistanceTravelled.Jsons;
 using HeadDistanceTravelled.Models;
 using System;
@@ -102,26 +103,24 @@ namespace HeadDistanceTravelled.Views
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constarctor(IHeadDistanceTravelledController controller, ManualMeasurementController manualMeasurementController)
+        public void Constarctor(IHeadDistanceTravelledController controller, IHDTDatabase database, ManualMeasurementController manualMeasurementController)
         {
             this._controller = controller;
-            using (var db = new HDTDatabase()) {
-                switch (PluginConfig.Instance.DistanceTypeValue) {
-                    case PluginConfig.DistanceType.Song:
-                        _startDistance = 0;
-                        break;
-                    case PluginConfig.DistanceType.Today:
-                        _startDistance = db.Find<DistanceInformation>(x => Plugin.LastLaunchDate <= x.CreatedAt).Sum(x => x.Distance);
-                        break;
-                    case PluginConfig.DistanceType.Total:
-                        _startDistance = db.Find<DistanceInformation>(x => true).Sum(x => x.Distance);
-                        break;
-                    case PluginConfig.DistanceType.Manual:
-                        _startDistance = manualMeasurementController.GetTotalDistance(manualMeasurementController.CurrentSessionGUID);
-                        break;
-                    default:
-                        break;
-                }
+            switch (PluginConfig.Instance.DistanceTypeValue) {
+                case PluginConfig.DistanceType.Song:
+                    _startDistance = 0;
+                    break;
+                case PluginConfig.DistanceType.Today:
+                    _startDistance = database.Find<DistanceInformation>(x => Plugin.LastLaunchDate <= x.CreatedAt).Sum(x => x.Distance);
+                    break;
+                case PluginConfig.DistanceType.Total:
+                    _startDistance = database.Find<DistanceInformation>(x => true).Sum(x => x.Distance);
+                    break;
+                case PluginConfig.DistanceType.Manual:
+                    _startDistance = manualMeasurementController.GetTotalDistance(manualMeasurementController.CurrentSessionGUID);
+                    break;
+                default:
+                    break;
             }
         }
         #endregion

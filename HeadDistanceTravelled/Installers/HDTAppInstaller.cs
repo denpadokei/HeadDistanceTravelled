@@ -1,4 +1,5 @@
-﻿using HeadDistanceTravelled.Models;
+﻿using HeadDistanceTravelled.Databases;
+using HeadDistanceTravelled.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,6 +11,7 @@ namespace HeadDistanceTravelled.Installers
     {
         public override void InstallBindings()
         {
+            this.Container.BindInterfacesAndSelfTo<HDTDatabase>().AsSingle();
             this.Container.BindInterfacesAndSelfTo<ManualMeasurementController>().AsSingle();
         }
     }

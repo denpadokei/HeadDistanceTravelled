@@ -1,4 +1,5 @@
 ﻿using HeadDistanceTravelled.Databases;
+using HeadDistanceTravelled.Databases.Interfaces;
 using HeadDistanceTravelled.Jsons;
 using HeadDistanceTravelled.Models;
 using IPA.Utilities;
@@ -68,17 +69,19 @@ namespace HeadDistanceTravelled
         private bool _isfpfc;
         private bool _isPause;
         private ManualMeasurementController _manualMeasurementController;
+        private IHDTDatabase _hDTDatabase;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constractor(IVRPlatformHelper helper, IGamePause pauseController, IAudioTimeSource timeSource, IReadonlyBeatmapData readonlyBeatmapData, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, IFPFCSettings fpfc, ManualMeasurementController manualMeasurementController)        {
+        public void Constractor(IVRPlatformHelper helper, IGamePause pauseController, IAudioTimeSource timeSource, IReadonlyBeatmapData readonlyBeatmapData, IHDTDatabase hDTDatabase, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, IFPFCSettings fpfc, ManualMeasurementController manualMeasurementController)        {
             this._platformHelper = helper;
             this._pauseController = pauseController;
             this._audioTimeSource = timeSource;
             this._difficultyBeatmap = gameplayCoreSceneSetupData.difficultyBeatmap;
             this._fpfc = fpfc;
             this._manualMeasurementController = manualMeasurementController;
+            this._hDTDatabase = hDTDatabase;
             // ライトショーとかやられるとマジ死ぬ
 #if VER_1_20_0
             var firstNote = readonlyBeatmapData.allBeatmapDataItems.OfType<NoteData>().FirstOrDefault();
@@ -159,13 +162,11 @@ namespace HeadDistanceTravelled
                 Distance = this._hmdDistance,
                 CreatedAt = DateTime.Now,
             };
-            using (var db = new HDTDatabase()) {
-                var include = EnumUtl.TryGetEnumValue<BeatmapCharacteristic>(this._difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.characteristicNameLocalizationKey, out var chara);
-                var bc = db.Find<BeatmapCharacteristicText>(x => x.BeatmapCharacteristicEnumValue == chara).FirstOrDefault();
-                var unknownBc = db.Find<BeatmapCharacteristicText>(x => x.BeatmapCharacteristicEnumValue == BeatmapCharacteristic.UnknownValue).FirstOrDefault();
-                info.BeatmapCharacteristicTextId = include ? bc.ID : unknownBc.ID;
-                var inserted = db.Insert(info);
-            }
+            var include = EnumUtl.TryGetEnumValue<BeatmapCharacteristic>(this._difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.characteristicNameLocalizationKey, out var chara);
+            var bc = _hDTDatabase.Find<BeatmapCharacteristicText>(x => x.BeatmapCharacteristicEnumValue == chara).FirstOrDefault();
+            var unknownBc = _hDTDatabase.Find<BeatmapCharacteristicText>(x => x.BeatmapCharacteristicEnumValue == BeatmapCharacteristic.UnknownValue).FirstOrDefault();
+            info.BeatmapCharacteristicTextId = include ? bc.ID : unknownBc.ID;
+            var inserted = _hDTDatabase.Insert(info);
             Plugin.Log.Info($"Id={info.ID}");
             this._manualMeasurementController.Save(info);
         }

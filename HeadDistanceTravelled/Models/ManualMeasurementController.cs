@@ -1,4 +1,5 @@
 ﻿using HeadDistanceTravelled.Databases;
+using HeadDistanceTravelled.Databases.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,14 +69,12 @@ namespace HeadDistanceTravelled.Models
             if (sessionGuid == Guid.Empty) {
                 return 0;
             }
-            using (var db = new HDTDatabase()) {
-                var MeasurementInfos = db.Find<ManualMeasurement>(x => x.SessionGUID == sessionGuid);
-                var distanceInfos = new List<DistanceInformation>();
-                foreach (var measurement in MeasurementInfos) {
-                    distanceInfos.AddRange(db.Find<DistanceInformation>(x => x.ID == measurement.DistanceInfoID));
-                }
-                return distanceInfos.Sum(x => x.Distance);
+            var MeasurementInfos = _database.Find<ManualMeasurement>(x => x.SessionGUID == sessionGuid).ToArray();
+            var distanceInfos = new List<DistanceInformation>();
+            foreach (var measurement in MeasurementInfos) {
+                distanceInfos.AddRange(_database.Find<DistanceInformation>(x => x.ID == measurement.DistanceInfoID).ToArray());
             }
+            return distanceInfos.Sum(x => x.Distance);
         }
 
         public void Save(DistanceInformation information)
@@ -83,16 +82,13 @@ namespace HeadDistanceTravelled.Models
             if (this.MeasurementStatusValue == MeasurementStatus.NotMeasuring || this.CurrentSessionGUID == Guid.Empty) {
                 return;
             }
-
-            using (var db = new HDTDatabase()) {
-                var info = new ManualMeasurement
-                {
-                    DistanceInfoID = information.ID,
-                    SessionGUID = this.CurrentSessionGUID,
-                    StartDate = this.StartDateTime,
-                };
-                db.Insert(info);
-            }
+            var info = new ManualMeasurement
+            {
+                DistanceInfoID = information.ID,
+                SessionGUID = this.CurrentSessionGUID,
+                StartDate = this.StartDateTime,
+            };
+            _database.Insert(info);
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -102,9 +98,16 @@ namespace HeadDistanceTravelled.Models
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
         private bool _disposedValue;
+        private IHDTDatabase _database;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
+        [Inject]
+        public ManualMeasurementController(IHDTDatabase database)
+        {
+            _database = database;
+        }
+
         public void Initialize()
         {
             this.Stop();

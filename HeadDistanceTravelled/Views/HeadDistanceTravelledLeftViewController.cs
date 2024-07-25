@@ -4,6 +4,7 @@ using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HeadDistanceTravelled.Configuration;
 using HeadDistanceTravelled.Databases;
+using HeadDistanceTravelled.Databases.Interfaces;
 using HeadDistanceTravelled.Jsons;
 using System;
 using System.Collections;
@@ -12,6 +13,7 @@ using System.ComponentModel;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using Zenject;
 
 
 namespace HeadDistanceTravelled.Views
@@ -55,11 +57,9 @@ namespace HeadDistanceTravelled.Views
         {
             base.DidActivate(firstActivation, addedToHierarchy, screenSystemEnabling);
             this.Show = PluginConfig.Instance.DisplayViews.Any(x => x == PluginConfig.DisplayView.Left);
-            using (var db = new HDTDatabase()) {
-                var todayDt = db.Find<DistanceInformation>(x => Plugin.LastLaunchDate <= x.CreatedAt).Sum(x => x.Distance);
-                this.TodaysDistance = $"<size=150%>{todayDt:#.000}</size> m";
-                Plugin.Log.Info(this.TodaysDistance);
-            }
+            var todayDt = _database.Find<DistanceInformation>(x => Plugin.LastLaunchDate <= x.CreatedAt).Sum(x => x.Distance);
+            this.TodaysDistance = $"<size=150%>{todayDt:#.000}</size> m";
+            Plugin.Log.Info(this.TodaysDistance);
         }
 
         protected override void OnPropertyChanged(PropertyChangedEventArgs e)
@@ -133,9 +133,15 @@ namespace HeadDistanceTravelled.Views
         [UIObject("distance-text1")]
         private GameObject _textMeshProUGUI;
         private bool _waitAndSetOnEnable = false;
+        private IHDTDatabase _database;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
+        [Inject]
+        internal void Constractor(IHDTDatabase database)
+        {
+            _database = database;
+        }
         #endregion
     }
 }
