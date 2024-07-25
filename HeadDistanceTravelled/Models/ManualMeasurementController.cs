@@ -23,6 +23,7 @@ namespace HeadDistanceTravelled.Models
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プロパティ
         public Guid CurrentSessionGUID { get; set; } = Guid.Empty;
+        public DateTime StartDateTime { get; set; } = DateTime.MinValue;
         public MeasurementStatus MeasurementStatusValue { get; set; } = MeasurementStatus.NotMeasuring;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -43,6 +44,7 @@ namespace HeadDistanceTravelled.Models
             }
             this.CurrentSessionGUID = Guid.NewGuid();
             this.MeasurementStatusValue = MeasurementStatus.Measuring;
+            this.StartDateTime = DateTime.Now;
         }
 
         public void Stop()
@@ -52,6 +54,7 @@ namespace HeadDistanceTravelled.Models
             }
             this.CurrentSessionGUID = Guid.Empty;
             this.MeasurementStatusValue = MeasurementStatus.NotMeasuring;
+            this.StartDateTime = DateTime.MinValue;
         }
 
         public void Reset()
@@ -85,7 +88,8 @@ namespace HeadDistanceTravelled.Models
                 var info = new ManualMeasurement
                 {
                     DistanceInfoID = information.ID,
-                    SessionGUID = this.CurrentSessionGUID
+                    SessionGUID = this.CurrentSessionGUID,
+                    StartDate = this.StartDateTime,
                 };
                 db.Insert(info);
             }

@@ -2,7 +2,7 @@
 	xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://monkeymanboy.github.io/BSML-Docs/BSMLSchema.xsd'
 	>
   <vertical horizontal-fit='PreferredSize' active="~show-view" preferred-width='100'>
-    <horizontal horizontal-fit='PreferredSize'>
+    <horizontal horizontal-fit='PreferredSize' preferred-width='80'>
       <button text='Start' on-click='on-start'></button>
       <button text='Stop' on-click='on-stop'></button>
       <button text='Reset' on-click='on-reset'></button>

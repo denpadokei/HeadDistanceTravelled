@@ -11,6 +11,7 @@ namespace HeadDistanceTravelled.Databases
         /// </summary>
         public int ID { get; set; }
         public Guid SessionGUID { get; set; }
+        public DateTime StartDate { get; set; }
         public int DistanceInfoID { get; set; }
     }
 }
