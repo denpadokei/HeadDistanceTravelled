@@ -12,7 +12,7 @@ namespace HeadDistanceTravelled.Configuration
         public static PluginConfig Instance { get; set; }
         public virtual bool ShowDistanceOnHMD { get; set; } = true; // Must be 'virtual' if you want BSIPA to detect a value change and save the config automatically.
         [UseConverter(typeof(ListConverter<DisplayView>))]
-        public virtual List<DisplayView> DisplayViews { get; set; } = new List<DisplayView> { DisplayView.Main, DisplayView.Left };
+        public virtual List<DisplayView> DisplayViews { get; set; } = new List<DisplayView> { DisplayView.Main, DisplayView.Left, DisplayView.Right };
         [UseConverter(typeof(EnumConverter<DistanceType>))]
         public virtual DistanceType DistanceTypeValue { get; set; } = DistanceType.Song;
 

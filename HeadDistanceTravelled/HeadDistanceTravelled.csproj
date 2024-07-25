@@ -176,6 +176,9 @@
     <EmbeddedResource Include="Views\HeadDistanceTravelledLeftViewController.bsml">
       <DependentUpon>HeadDistanceTravelledLeftViewController.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\HeadDistanceTravelledRightViewController.bsml">
+      <DependentUpon>HeadDistanceTravelledRightViewController.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="LiteDB-5.0.21\LiteDB\LiteDB.csproj" />
     <None Include="LiteDB-5.0.21\LiteDB\LiteDB.snk" />
   </ItemGroup>

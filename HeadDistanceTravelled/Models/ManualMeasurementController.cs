@@ -1,22 +1,29 @@
-﻿using HeadDistanceTravelled.Databases.Interfaces;
-using HeadDistanceTravelled.Jsons;
-using HeadDistanceTravelled.Models;
-using LiteDB;
+﻿using HeadDistanceTravelled.Databases;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+using Zenject;
 
-namespace HeadDistanceTravelled.Databases
+namespace HeadDistanceTravelled.Models
 {
-    public class HDTDatabase : IDisposable
+    internal class ManualMeasurementController : IInitializable, IDisposable
     {
+        public enum MeasurementStatus
+        {
+            /// <summary>
+            /// 計測中
+            /// </summary>
+            Measuring,
+            /// <summary>
+            /// 計測してない
+            /// </summary>
+            NotMeasuring
+        }
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プロパティ
+        public Guid CurrentSessionGUID { get; set; } = Guid.Empty;
+        public MeasurementStatus MeasurementStatusValue { get; set; } = MeasurementStatus.NotMeasuring;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // コマンド
@@ -29,105 +36,74 @@ namespace HeadDistanceTravelled.Databases
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // パブリックメソッド
-        public static bool DBExits()
+        public void Start()
         {
-            return File.Exists(s_dbPath);
-        }
-
-        public bool AnyBeatmapCharacteristic()
-        {
-            return _liteDatabase.GetCollection<BeatmapCharacteristicText>(nameof(BeatmapCharacteristicText)).FindAll().Any();
-        }
-
-        public void SetDefaultValue()
-        {
-            var enumTextEntities = Enum.GetValues(typeof(BeatmapCharacteristic))
-                .OfType<BeatmapCharacteristic>()
-                .Select(x => new BeatmapCharacteristicText
-                {
-                    BeatmapCharacteristicEnumValue = x,
-                    Key = x.ToString(),
-                    DisplayName = x.GetDescription()
-                });
-            var collections = _liteDatabase.GetCollection<BeatmapCharacteristicText>(nameof(BeatmapCharacteristicText));
-            _liteDatabase.BeginTrans();
-            foreach (var beatmapChara in enumTextEntities) {
-                try {
-                    collections.EnsureIndex(x => x.BeatmapCharacteristicEnumValue, true);
-                    collections.Insert(beatmapChara);
-                }
-                catch (Exception e) {
-                    Plugin.Log.Error(e);
-                }
+            if (this.MeasurementStatusValue == MeasurementStatus.Measuring) {
+                return;
             }
-            _liteDatabase.Commit();
+            this.CurrentSessionGUID = Guid.NewGuid();
+            this.MeasurementStatusValue = MeasurementStatus.Measuring;
         }
 
-        public BsonValue Insert<T>(T entity)
+        public void Stop()
         {
-            _liteDatabase.BeginTrans();
-            var result = _liteDatabase.GetCollection<T>(typeof(T).Name).Insert(entity);
-            _liteDatabase.Commit();
-            return result;
+            if (this.MeasurementStatusValue == MeasurementStatus.NotMeasuring) {
+                return;
+            }
+            this.CurrentSessionGUID = Guid.Empty;
+            this.MeasurementStatusValue = MeasurementStatus.NotMeasuring;
         }
 
-        public void InsertBulk<T>(IEnumerable<T> enties)
+        public void Reset()
         {
-            _liteDatabase.BeginTrans();
-            _liteDatabase.GetCollection<T>(typeof(T).Name).Insert(enties);
-            _liteDatabase.Commit();
+            this.Stop();
+            this.Start();
         }
 
-        public void Update<T>(T entity)
+        public float GetTotalDistance(Guid sessionGuid)
         {
-            _liteDatabase.GetCollection<T>(typeof(T).Name).Update(entity);
+            if (sessionGuid == Guid.Empty) {
+                return 0;
+            }
+            using (var db = new HDTDatabase()) {
+                var MeasurementInfos = db.Find<ManualMeasurement>(x => x.SessionGUID == sessionGuid);
+                var distanceInfos = new List<DistanceInformation>();
+                foreach (var measurement in MeasurementInfos) {
+                    distanceInfos.AddRange(db.Find<DistanceInformation>(x => x.ID == measurement.DistanceInfoID));
+                }
+                return distanceInfos.Sum(x => x.Distance);
+            }
         }
 
-        public IEnumerable<T> Find<T>(Expression<Func<T, bool>> expression, int skip = 0, int limit = int.MaxValue)
+        public void Save(DistanceInformation information)
         {
-            return _liteDatabase.GetCollection<T>(typeof(T).Name).Find(expression, skip, limit);
+            if (this.MeasurementStatusValue == MeasurementStatus.NotMeasuring || this.CurrentSessionGUID == Guid.Empty) {
+                return;
+            }
+
+            using (var db = new HDTDatabase()) {
+                var info = new ManualMeasurement
+                {
+                    DistanceInfoID = information.ID,
+                    SessionGUID = this.CurrentSessionGUID
+                };
+                db.Insert(info);
+            }
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プライベートメソッド
-        private void Connect()
-        {
-            lock (_lock) {
-                if (this._liteDatabase != null) {
-                    this._liteDatabase.Dispose();
-                }
-                this._liteDatabase = new LiteDatabase(s_dbPath);
-            }
-        }
 
-        private void DisConnect()
-        {
-            lock (_lock) {
-                if (this._liteDatabase == null) {
-                    return;
-                }
-                this._liteDatabase.Dispose();
-                this._liteDatabase = null;
-            }
-        }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
         private bool _disposedValue;
-        private static readonly string s_dbPath = Path.Combine(Application.persistentDataPath, "HMDDistance.litedb");
-        private LiteDatabase _liteDatabase;
-        private static readonly object _lock = new object();
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
-        static HDTDatabase()
+        public void Initialize()
         {
-            BsonMapper.Global.EnumAsInteger = true;
-        }
-
-        public HDTDatabase()
-        {
-            this.Connect();
+            this.Stop();
         }
 
         protected virtual void Dispose(bool disposing)
@@ -135,7 +111,7 @@ namespace HeadDistanceTravelled.Databases
             if (!_disposedValue) {
                 if (disposing) {
                     // TODO: マネージド状態を破棄します (マネージド オブジェクト)
-                    this.DisConnect();
+                    this.Stop();
                 }
 
                 // TODO: アンマネージド リソース (アンマネージド オブジェクト) を解放し、ファイナライザーをオーバーライドします

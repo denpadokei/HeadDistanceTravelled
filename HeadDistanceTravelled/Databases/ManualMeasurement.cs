@@ -1,0 +1,16 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace HeadDistanceTravelled.Databases
+{
+    internal class ManualMeasurement
+    {
+        /// <summary>
+        /// 自動採番
+        /// </summary>
+        public int ID { get; set; }
+        public Guid SessionGUID { get; set; }
+        public int DistanceInfoID { get; set; }
+    }
+}
