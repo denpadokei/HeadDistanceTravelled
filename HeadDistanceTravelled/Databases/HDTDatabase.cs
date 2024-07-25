@@ -30,11 +30,6 @@ namespace HeadDistanceTravelled.Databases
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // パブリックメソッド
-        public static bool DBExits()
-        {
-            return File.Exists(s_dbPath);
-        }
-
         public bool AnyBeatmapCharacteristic()
         {
             return _liteDatabase.GetCollection<BeatmapCharacteristicText>(nameof(BeatmapCharacteristicText)).FindAll().Any();
@@ -94,13 +89,10 @@ namespace HeadDistanceTravelled.Databases
         private void Connect()
         {
             lock (_lock) {
-                if (!DBExits()) {
-                    SaveDataConvert.Upgrade(this);
-                }
                 if (this._liteDatabase != null) {
                     this._liteDatabase.Dispose();
                 }
-                this._liteDatabase = new LiteDatabase($"filename={s_dbPath};connection=Shared");
+                this._liteDatabase = new LiteDatabase($"filename=\"{s_dbPath}\";connection=Shared");
                 Plugin.Log.Debug($"database connected.");
             }
         }
