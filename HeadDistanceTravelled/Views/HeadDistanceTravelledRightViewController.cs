@@ -82,7 +82,7 @@ namespace HeadDistanceTravelled.Views
             }
             else {
                 var b = PluginConfig.Instance.DisplayViews.Count == 1
-                    && PluginConfig.Instance.DisplayViews.FirstOrDefault() == PluginConfig.DisplayView.Left;
+                    && PluginConfig.Instance.DisplayViews.FirstOrDefault() == PluginConfig.DisplayView.Right;
                 this.StartCoroutine(WaitAndSet(text, !b));
             }
         }
