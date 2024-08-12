@@ -31,8 +31,9 @@ namespace HeadDistanceTravelled.Models
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // イベント
         public event Action<ManualMeasurementController> OnStarted;
-        public event Action<ManualMeasurementController> OnStoped;
+        public event Action<ManualMeasurementController> OnStopped;
         public event Action<ManualMeasurementController> OnSaved;
+        public event Action<ManualMeasurementController> OnConfigLoaded;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // オーバーライドメソッド
@@ -47,6 +48,7 @@ namespace HeadDistanceTravelled.Models
             this.CurrentSessionGUID = Guid.NewGuid();
             this.MeasurementStatusValue = MeasurementStatus.Measuring;
             this.StartDateTime = DateTime.Now;
+            this.OnStarted?.Invoke(this);
         }
 
         public void Stop()
@@ -57,6 +59,7 @@ namespace HeadDistanceTravelled.Models
             this.CurrentSessionGUID = Guid.Empty;
             this.MeasurementStatusValue = MeasurementStatus.NotMeasuring;
             this.StartDateTime = DateTime.MinValue;
+            this.OnStopped?.Invoke(this);
         }
 
         public void Reset()
@@ -72,7 +75,7 @@ namespace HeadDistanceTravelled.Models
                     if (this.MeasurementStatusValue == MeasurementStatus.Measuring) {
                         break;
                     }
-                    var lastInfo = _database.Database.GetCollection<ManualMeasurement>().FindAll().OrderBy(x => x.StartDate).LastOrDefault();
+                    var lastInfo = _database.Database.GetCollection<ManualMeasurement>().FindAll().OrderByDescending(x => x.StartDate).FirstOrDefault();
                     if (lastInfo == null) {
                         this.Stop();
                     }
@@ -88,6 +91,7 @@ namespace HeadDistanceTravelled.Models
                 default:
                     break;
             }
+            this.OnConfigLoaded?.Invoke(this);
         }
 
         public float GetTotalDistance(Guid sessionGuid)
@@ -143,6 +147,7 @@ namespace HeadDistanceTravelled.Models
         public void Initialize()
         {
             this.Stop();
+            this.LoadConfig();
         }
 
         protected virtual void Dispose(bool disposing)

@@ -111,7 +111,7 @@ namespace HeadDistanceTravelled.Views
         {
             base.OnDestroy();
             this._manualMeasurementController.OnStarted -= this.OnManualMeasurementController_OnStarted;
-            this._manualMeasurementController.OnStoped -= this.OnManualMeasurementController_OnStoped;
+            this._manualMeasurementController.OnStopped -= this.OnManualMeasurementController_OnStoped;
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -177,7 +177,7 @@ namespace HeadDistanceTravelled.Views
         {
             this._manualMeasurementController = manualMeasurementController;
             this._manualMeasurementController.OnStarted += this.OnManualMeasurementController_OnStarted;
-            this._manualMeasurementController.OnStoped += this.OnManualMeasurementController_OnStoped;
+            this._manualMeasurementController.OnStopped += this.OnManualMeasurementController_OnStoped;
         }
         #endregion
     }
