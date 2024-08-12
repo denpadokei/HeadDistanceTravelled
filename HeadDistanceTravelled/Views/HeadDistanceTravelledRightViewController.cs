@@ -93,21 +93,25 @@ namespace HeadDistanceTravelled.Views
         public void OnStart()
         {
             this._manualMeasurementController?.Start();
-            this.Status = "Recording";
-            this.UpdateDistanceText(_manualMeasurementController.GetTotalDistance(_manualMeasurementController.CurrentSessionGUID));
+            
         }
         [UIAction("on-stop")]
         public void OnStop()
         {
             this._manualMeasurementController?.Stop();
-            this.Status = "";
+            
         }
         [UIAction("on-reset")]
         public void OnReset()
         {
             this._manualMeasurementController?.Reset();
-            this.Status = "Recording";
-            this.UpdateDistanceText(_manualMeasurementController.GetTotalDistance(_manualMeasurementController.CurrentSessionGUID));
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            this._manualMeasurementController.OnStarted -= this.OnManualMeasurementController_OnStarted;
+            this._manualMeasurementController.OnStoped -= this.OnManualMeasurementController_OnStoped;
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -148,6 +152,16 @@ namespace HeadDistanceTravelled.Views
             text.richText = true;
             _waitAndSetOnEnable = false;
         }
+        private void OnManualMeasurementController_OnStoped(ManualMeasurementController obj)
+        {
+            this.Status = "";
+        }
+
+        private void OnManualMeasurementController_OnStarted(ManualMeasurementController obj)
+        {
+            this.Status = "Recording";
+            this.UpdateDistanceText(_manualMeasurementController.GetTotalDistance(_manualMeasurementController.CurrentSessionGUID));
+        }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
@@ -162,6 +176,8 @@ namespace HeadDistanceTravelled.Views
         internal void Constractor(ManualMeasurementController manualMeasurementController)
         {
             this._manualMeasurementController = manualMeasurementController;
+            this._manualMeasurementController.OnStarted += this.OnManualMeasurementController_OnStarted;
+            this._manualMeasurementController.OnStoped += this.OnManualMeasurementController_OnStoped;
         }
         #endregion
     }

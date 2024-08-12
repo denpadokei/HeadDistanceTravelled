@@ -1,4 +1,5 @@
-﻿using HeadDistanceTravelled.Databases;
+﻿using HeadDistanceTravelled.Configuration;
+using HeadDistanceTravelled.Databases;
 using HeadDistanceTravelled.Databases.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,8 @@ namespace HeadDistanceTravelled.Models
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // イベント
+        public event Action<ManualMeasurementController> OnStarted;
+        public event Action<ManualMeasurementController> OnStoped;
         public event Action<ManualMeasurementController> OnSaved;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -60,6 +63,31 @@ namespace HeadDistanceTravelled.Models
         {
             this.Stop();
             this.Start();
+        }
+
+        public void LoadConfig()
+        {
+            switch (PluginConfig.Instance.MeasurementStatusValue) {
+                case MeasurementStatus.Measuring:
+                    if (this.MeasurementStatusValue == MeasurementStatus.Measuring) {
+                        break;
+                    }
+                    var lastInfo = _database.Database.GetCollection<ManualMeasurement>().FindAll().OrderBy(x => x.StartDate).LastOrDefault();
+                    if (lastInfo == null) {
+                        this.Stop();
+                    }
+                    else {
+                        this.CurrentSessionGUID = lastInfo.SessionGUID;
+                        this.MeasurementStatusValue = MeasurementStatus.Measuring;
+                        this.StartDateTime = lastInfo.StartDate;
+                    }
+                    break;
+                case MeasurementStatus.NotMeasuring:
+                    this.Stop();
+                    break;
+                default:
+                    break;
+            }
         }
 
         public float GetTotalDistance(Guid sessionGuid)
