@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace HeadDistanceTravelled
 {
@@ -8,6 +9,7 @@ namespace HeadDistanceTravelled
         Vector3 HMDPositon { get; }
         Quaternion HMDRotation { get; }
         event HMDDistanceChangedEventHandler OnDistanceChanged;
+        event Action<IHeadDistanceTravelledController> OnDestroied;
     }
     public delegate void HMDDistanceChangedEventHandler(float distance, in Vector3 hmdDistance, in Quaternion hmdRotation);
 }

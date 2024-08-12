@@ -51,6 +51,7 @@ namespace HeadDistanceTravelled
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // イベント
         public event HMDDistanceChangedEventHandler OnDistanceChanged;
+        public event Action<IHeadDistanceTravelledController> OnDestroied;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
@@ -169,6 +170,12 @@ namespace HeadDistanceTravelled
             var inserted = _hDTDatabase.Insert(info);
             Plugin.Log.Info($"Id={info.ID}");
             this._manualMeasurementController.Save(info);
+            try {
+                this.OnDestroied?.Invoke(this);
+            }
+            catch (Exception e) {
+                Plugin.Log.Error(e);
+            }
         }
         #endregion
     }

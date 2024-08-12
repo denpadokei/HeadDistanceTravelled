@@ -3,6 +3,7 @@ using IPA.Config.Stores.Attributes;
 using IPA.Config.Stores.Converters;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using static HeadDistanceTravelled.Models.ManualMeasurementController;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
 namespace HeadDistanceTravelled.Configuration
@@ -15,6 +16,8 @@ namespace HeadDistanceTravelled.Configuration
         public virtual List<DisplayView> DisplayViews { get; set; } = new List<DisplayView> { DisplayView.Main, DisplayView.Left, DisplayView.Right };
         [UseConverter(typeof(EnumConverter<DistanceType>))]
         public virtual DistanceType DistanceTypeValue { get; set; } = DistanceType.Song;
+        [UseConverter(typeof(EnumConverter<MeasurementStatus>))]
+        public virtual MeasurementStatus MeasurementStatusValue { get; set; } = MeasurementStatus.NotMeasuring;
 
         /// <summary>
         /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
