@@ -75,7 +75,7 @@ namespace HeadDistanceTravelled.Models
                     if (this.MeasurementStatusValue == MeasurementStatus.Measuring) {
                         break;
                     }
-                    var lastInfo = _database.Database.GetCollection<ManualMeasurement>().FindAll().OrderByDescending(x => x.StartDate).FirstOrDefault();
+                    var lastInfo = _database.RawDatabase.GetCollection<ManualMeasurement>().FindAll().OrderByDescending(x => x.StartDate).FirstOrDefault();
                     if (lastInfo == null) {
                         this.Stop();
                     }

@@ -7,7 +7,7 @@ namespace HeadDistanceTravelled.Databases.Interfaces
 {
     public interface IHDTDatabase
     {
-        LiteDatabase Database { get; }
+        LiteDatabase RawDatabase { get; }
         bool AnyBeatmapCharacteristic();
         IEnumerable<T> Find<T>(Expression<Func<T, bool>> expression, int skip = 0, int limit = int.MaxValue);
         BsonValue Insert<T>(T entity);
