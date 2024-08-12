@@ -48,6 +48,7 @@ namespace HeadDistanceTravelled.Models
             this.CurrentSessionGUID = Guid.NewGuid();
             this.MeasurementStatusValue = MeasurementStatus.Measuring;
             this.StartDateTime = DateTime.Now;
+            PluginConfig.Instance.MeasurementStatusValue = this.MeasurementStatusValue;
             this.OnStarted?.Invoke(this);
         }
 
@@ -59,6 +60,7 @@ namespace HeadDistanceTravelled.Models
             this.CurrentSessionGUID = Guid.Empty;
             this.MeasurementStatusValue = MeasurementStatus.NotMeasuring;
             this.StartDateTime = DateTime.MinValue;
+            PluginConfig.Instance.MeasurementStatusValue = this.MeasurementStatusValue;
             this.OnStopped?.Invoke(this);
         }
 
