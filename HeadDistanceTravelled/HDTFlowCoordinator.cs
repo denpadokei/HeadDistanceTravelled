@@ -1,5 +1,7 @@
 ﻿using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.MenuButtons;
+using HeadDistanceTravelled.Databases.Interfaces;
+using HeadDistanceTravelled.Jsons;
 using HeadDistanceTravelled.Views;
 using HMUI;
 using Zenject;
@@ -18,7 +20,7 @@ namespace HeadDistanceTravelled
             if (firstActivation) {
                 this.SetTitle("HeadDistanceTravelled");
                 this.showBackButton = true;
-                this.ProvideInitialViewControllers(this._viewController);
+                this.ProvideInitialViewControllers(this._mainViewController, _leftViewController, _rightViewController);
             }
         }
         protected override void BackButtonWasPressed(ViewController topViewController)
@@ -33,6 +35,9 @@ namespace HeadDistanceTravelled
         {
             this._menuButton = new MenuButton("HeadDistanceTravelled", "", this.ShowMainFlowCoodniator);
             MenuButtons.instance?.RegisterButton(this._menuButton);
+            if (!_database.AnyBeatmapCharacteristic()) {
+                SaveDataConvert.Upgrade(_database);
+            }
         }
 
         public void OnDestroy()
@@ -49,15 +54,21 @@ namespace HeadDistanceTravelled
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
-        private HeadDistanceTravelledMainViewController _viewController;
+        private HeadDistanceTravelledMainViewController _mainViewController;
+        private HeadDistanceTravelledLeftViewController _leftViewController;
+        private HeadDistanceTravelledRightViewController _rightViewController;
         private MenuButton _menuButton;
+        private IHDTDatabase _database;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constractor(HeadDistanceTravelledMainViewController viewController)
+        public void Constractor(HeadDistanceTravelledMainViewController mainViewController, HeadDistanceTravelledLeftViewController leftViewController, HeadDistanceTravelledRightViewController rightViewController, IHDTDatabase hDTDatabase)
         {
-            this._viewController = viewController;
+            this._mainViewController = mainViewController;
+            this._leftViewController = leftViewController;
+            this._rightViewController = rightViewController;
+            this._database  = hDTDatabase;
         }
         #endregion
     }

@@ -1,0 +1,14 @@
+﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
+	xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://monkeymanboy.github.io/BSML-Docs/BSMLSchema.xsd'
+	>
+  <vertical horizontal-fit='PreferredSize' active="~show-view" preferred-width='100'>
+    <horizontal horizontal-fit='PreferredSize' preferred-width='80'>
+      <button text='Start' on-click='on-start'></button>
+      <button text='Stop' on-click='on-stop'></button>
+      <button text='Reset' on-click='on-reset'></button>
+    </horizontal>
+    <text text='HeadDistanceTravelled - Manual' />
+    <text text="~status" font-size="5" color="red" overflow-mode="Overflow" align="Center"/>
+    <text id="distance-text3" text="~manual-distance" font-size="40" overflow-mode="Overflow" align="Center"/>
+  </vertical>
+</bg>

@@ -3,11 +3,12 @@
   "id": "HeadDistanceTravelled",
   "name": "HeadDistanceTravelled",
   "author": "",
-  "version": "0.0.3",
+  "version": "0.1.1",
   "description": "",
   "gameVersion": "1.20.0",
   "dependsOn": {
     "BSIPA": "^4.2.2",
-    "SiraUtil": "^3.0.5"
+    "SiraUtil": "^3.0.5",
+    "System.Buffers": "^4.5.1"
   }
 }

@@ -1,8 +1,11 @@
-﻿using HeadDistanceTravelled.Installers;
+﻿using HeadDistanceTravelled.Databases;
+using HeadDistanceTravelled.Installers;
+using HeadDistanceTravelled.Jsons;
 using IPA;
 using IPA.Config;
 using IPA.Config.Stores;
 using SiraUtil.Zenject;
+using System;
 using IPALogger = IPA.Logging.Logger;
 
 namespace HeadDistanceTravelled
@@ -12,6 +15,8 @@ namespace HeadDistanceTravelled
     {
         internal static Plugin Instance { get; private set; }
         internal static IPALogger Log { get; private set; }
+
+        public static DateTime LastLaunchDate { get; } = DateTime.Now.Date;
 
         [Init]
         /// <summary>
@@ -26,6 +31,8 @@ namespace HeadDistanceTravelled
             Log.Info("HeadDistanceTravelled initialized.");
             Configuration.PluginConfig.Instance = conf.Generated<Configuration.PluginConfig>();
             Log.Debug("Config loaded");
+            Log.Info($"LaunchDate:{LastLaunchDate}");
+            zenjector.Install<HDTAppInstaller>(Location.App);
             zenjector.Install<HDTMenuInstaller>(Location.Menu);
             zenjector.Install<HDTGameInstaller>(Location.Player);
         }

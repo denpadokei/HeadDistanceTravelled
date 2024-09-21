@@ -6,6 +6,7 @@ using BeatSaberMarkupLanguage.ViewControllers;
 using HeadDistanceTravelled.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Zenject;
 
 namespace HeadDistanceTravelled.Views
@@ -21,6 +22,18 @@ namespace HeadDistanceTravelled.Views
         {
             get => PluginConfig.Instance.ShowDistanceOnHMD;
             set => PluginConfig.Instance.ShowDistanceOnHMD = value;
+        }
+
+        [UIValue("display-type")]
+        public List<object> DisplayTypes { get; } = new List<object>(Enum.GetValues(typeof(PluginConfig.DistanceType)).OfType<PluginConfig.DistanceType>().Select(x => x.ToString()));
+        [UIValue("current")]
+        public string CurrentDisplayType
+        {
+            get => PluginConfig.Instance.DistanceTypeValue.ToString();
+            set
+            {
+                PluginConfig.Instance.DistanceTypeValue = Enum.GetValues(typeof(PluginConfig.DistanceType)).OfType<PluginConfig.DistanceType>().FirstOrDefault(x => x.ToString() == value);
+            }
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*

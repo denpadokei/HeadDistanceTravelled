@@ -1,4 +1,8 @@
-﻿using HeadDistanceTravelled.Jsons;
+﻿using HeadDistanceTravelled.Databases;
+using HeadDistanceTravelled.Databases.Interfaces;
+using HeadDistanceTravelled.Jsons;
+using HeadDistanceTravelled.Models;
+using IPA.Utilities;
 using SiraUtil.Tools.FPFC;
 using System;
 using System.Collections.ObjectModel;
@@ -47,6 +51,7 @@ namespace HeadDistanceTravelled
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // イベント
         public event HMDDistanceChangedEventHandler OnDistanceChanged;
+        public event Action<IHeadDistanceTravelledController> OnDestroied;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
@@ -64,17 +69,20 @@ namespace HeadDistanceTravelled
         private IFPFCSettings _fpfc;
         private bool _isfpfc;
         private bool _isPause;
+        private ManualMeasurementController _manualMeasurementController;
+        private IHDTDatabase _hDTDatabase;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constractor(IVRPlatformHelper helper, IGamePause pauseController, IAudioTimeSource timeSource, IReadonlyBeatmapData readonlyBeatmapData, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, IFPFCSettings fpfc)
-        {
+        public void Constractor(IVRPlatformHelper helper, IGamePause pauseController, IAudioTimeSource timeSource, IReadonlyBeatmapData readonlyBeatmapData, IHDTDatabase hDTDatabase, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, IFPFCSettings fpfc, ManualMeasurementController manualMeasurementController)        {
             this._platformHelper = helper;
             this._pauseController = pauseController;
             this._audioTimeSource = timeSource;
             this._difficultyBeatmap = gameplayCoreSceneSetupData.difficultyBeatmap;
             this._fpfc = fpfc;
+            this._manualMeasurementController = manualMeasurementController;
+            this._hDTDatabase = hDTDatabase;
             // ライトショーとかやられるとマジ死ぬ
 #if VER_1_20_0
             var firstNote = readonlyBeatmapData.allBeatmapDataItems.OfType<NoteData>().FirstOrDefault();
@@ -147,13 +155,27 @@ namespace HeadDistanceTravelled
             this._pauseController.didPauseEvent -= this.OnDidPauseEvent;
             this._pauseController.didResumeEvent -= this.OnDidResumeEvent;
             this._fpfc.Changed -= this.OnFPFCChanged;
-            var data = new HDTData();
-            data.Load();
-            data.HeadDistanceTravelled += this._hmdDistance;
-            var oldResults = data.BeatmapResults.ToList();
-            oldResults.Add(new HDTData.BeatmapResult(this._difficultyBeatmap.level.levelID, this._difficultyBeatmap.level.songName, this._hmdDistance, DateTime.Now));
-            data.BeatmapResults = new ReadOnlyCollection<HDTData.BeatmapResult>(oldResults);
-            data.Save();
+            var info = new DistanceInformation
+            {
+                LevelID = this._difficultyBeatmap.level.levelID,
+                SongName = this._difficultyBeatmap.level.songName,
+                Difficurity = this._difficultyBeatmap.difficulty.ToString(),
+                Distance = this._hmdDistance,
+                CreatedAt = DateTime.Now,
+            };
+            var include = EnumUtl.TryGetEnumValue<BeatmapCharacteristic>(this._difficultyBeatmap.parentDifficultyBeatmapSet.beatmapCharacteristic.characteristicNameLocalizationKey, out var chara);
+            var bc = _hDTDatabase.Find<BeatmapCharacteristicText>(x => x.BeatmapCharacteristicEnumValue == chara).FirstOrDefault();
+            var unknownBc = _hDTDatabase.Find<BeatmapCharacteristicText>(x => x.BeatmapCharacteristicEnumValue == BeatmapCharacteristic.UnknownValue).FirstOrDefault();
+            info.BeatmapCharacteristicTextId = include ? bc.ID : unknownBc.ID;
+            var inserted = _hDTDatabase.Insert(info);
+            Plugin.Log.Info($"Id={info.ID}");
+            this._manualMeasurementController.Save(info);
+            try {
+                this.OnDestroied?.Invoke(this);
+            }
+            catch (Exception e) {
+                Plugin.Log.Error(e);
+            }
         }
         #endregion
     }
