@@ -1,12 +1,8 @@
-﻿using BeatSaberMarkupLanguage;
-using BeatSaberMarkupLanguage.Attributes;
+﻿using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components;
-using BeatSaberMarkupLanguage.ViewControllers;
 using HeadDistanceTravelled.Configuration;
 using HeadDistanceTravelled.Models;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using TMPro;
@@ -93,13 +89,13 @@ namespace HeadDistanceTravelled.Views
         public void OnStart()
         {
             this._manualMeasurementController?.Start();
-            
+
         }
         [UIAction("on-stop")]
         public void OnStop()
         {
             this._manualMeasurementController?.Stop();
-            
+
         }
         [UIAction("on-reset")]
         public void OnReset()

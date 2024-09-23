@@ -4,9 +4,7 @@ using BeatSaberMarkupLanguage.ViewControllers;
 using HeadDistanceTravelled.Configuration;
 using HeadDistanceTravelled.Databases;
 using HeadDistanceTravelled.Databases.Interfaces;
-using HeadDistanceTravelled.Jsons;
 using HeadDistanceTravelled.Models;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -97,7 +95,7 @@ namespace HeadDistanceTravelled.Views
         #region // メンバ変数
         private IHeadDistanceTravelledController _controller;
         private FloatingScreen _floatingScreen;
-        private static readonly Vector3 s_localOffset= new Vector3(0, 0.4f, 0);
+        private static readonly Vector3 s_localOffset = new Vector3(0, 0.4f, 0);
         private float _startDistance = 0;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*

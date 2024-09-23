@@ -2,10 +2,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HeadDistanceTravelled.Jsons
 {
@@ -35,7 +31,7 @@ namespace HeadDistanceTravelled.Jsons
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            
+
             try {
                 if (EnumUtl.TryGetEnumValueUserDescription<BeatmapCharacteristic>(base.ReadJson(reader, objectType, existingValue, serializer)?.ToString(), out var val)) {
                     return val;

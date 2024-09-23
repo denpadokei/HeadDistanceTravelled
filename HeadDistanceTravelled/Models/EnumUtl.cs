@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HeadDistanceTravelled.Models
 {
@@ -28,7 +25,7 @@ namespace HeadDistanceTravelled.Models
 
     internal class EnumUtl
     {
-        public static bool TryGetEnumValue<T>(string txt, out T val) where T : Enum 
+        public static bool TryGetEnumValue<T>(string txt, out T val) where T : Enum
         {
             val = default;
             if (Enum.GetValues(typeof(T)).OfType<T>().Any(x => string.Equals(x.ToString(), txt))) {

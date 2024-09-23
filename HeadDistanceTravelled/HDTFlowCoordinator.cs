@@ -68,7 +68,7 @@ namespace HeadDistanceTravelled
             this._mainViewController = mainViewController;
             this._leftViewController = leftViewController;
             this._rightViewController = rightViewController;
-            this._database  = hDTDatabase;
+            this._database = hDTDatabase;
         }
         #endregion
     }

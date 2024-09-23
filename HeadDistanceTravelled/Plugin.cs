@@ -1,6 +1,4 @@
-﻿using HeadDistanceTravelled.Databases;
-using HeadDistanceTravelled.Installers;
-using HeadDistanceTravelled.Jsons;
+﻿using HeadDistanceTravelled.Installers;
 using IPA;
 using IPA.Config;
 using IPA.Config.Stores;
