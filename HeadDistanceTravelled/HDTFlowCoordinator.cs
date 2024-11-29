@@ -34,7 +34,7 @@ namespace HeadDistanceTravelled
         public void Initialize()
         {
             this._menuButton = new MenuButton("HeadDistanceTravelled", "", this.ShowMainFlowCoodniator);
-            MenuButtons.instance?.RegisterButton(this._menuButton);
+            MenuButtons.Instance?.RegisterButton(this._menuButton);
             if (!_database.AnyBeatmapCharacteristic()) {
                 SaveDataConvert.Upgrade(_database);
             }
@@ -42,7 +42,7 @@ namespace HeadDistanceTravelled
 
         public void OnDestroy()
         {
-            MenuButtons.instance?.UnregisterButton(this._menuButton);
+            MenuButtons.Instance?.UnregisterButton(this._menuButton);
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*

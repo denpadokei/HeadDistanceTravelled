@@ -47,11 +47,11 @@ namespace HeadDistanceTravelled.Views
         #region // パブリックメソッド
         public void Initialize()
         {
-            BSMLSettings.instance.AddSettingsMenu(_buttonName, this.ResourceName, this);
+            BSMLSettings.Instance.AddSettingsMenu(_buttonName, this.ResourceName, this);
         }
         protected override void OnDestroy()
         {
-            BSMLSettings.instance?.RemoveSettingsMenu(_buttonName);
+            BSMLSettings.Instance?.RemoveSettingsMenu(_buttonName);
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
