@@ -126,6 +126,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Merge PR
-        run: gh pr merge --squash "${{ github.event.pull_request.number }}"
+        # チェックアウトしないので gh にリポジトリを明示する (git の現在地から解れない)。
+        run: gh pr merge --squash --repo "${{ github.repository }}" "${{ github.event.pull_request.number }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
