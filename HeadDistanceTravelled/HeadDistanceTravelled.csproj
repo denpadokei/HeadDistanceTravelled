@@ -172,24 +172,15 @@
   <ItemGroup>
     <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
     <None Include="HeadDistanceTravelled.csproj.user" Condition="Exists('HeadDistanceTravelled.csproj.user')" />
-    <EmbeddedResource Include="Views\HeadDistanceTravelledMainViewController.bsml">
-      <DependentUpon>HeadDistanceTravelledMainViewController.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\HMDDistanceFlowtingScreen.bsml">
-      <DependentUpon>HMDDistanceFloatingScreen.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\HandDistanceFloatingScreen.bsml">
-      <DependentUpon>HandDistanceFloatingScreen.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\HDTSettingView.bsml">
-      <DependentUpon>HDTSettingView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\HeadDistanceTravelledLeftViewController.bsml">
-      <DependentUpon>HeadDistanceTravelledLeftViewController.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\HeadDistanceTravelledRightViewController.bsml">
-      <DependentUpon>HeadDistanceTravelledRightViewController.cs</DependentUpon>
-    </EmbeddedResource>
+    <!-- DependentUpon 付き EmbeddedResource は MSBuild により資源名から
+         拡張子 (.bsml) まで捨てられるため、BSML が見つけて ResourceNotFoundException
+         になる。DependentUpon なしで登録して ".bsml" 付きの名前にする。 -->
+    <EmbeddedResource Include="Views\HeadDistanceTravelledMainViewController.bsml" />
+    <EmbeddedResource Include="Views\HMDDistanceFloatingScreen.bsml" />
+    <EmbeddedResource Include="Views\HandDistanceFloatingScreen.bsml" />
+    <EmbeddedResource Include="Views\HDTSettingView.bsml" />
+    <EmbeddedResource Include="Views\HeadDistanceTravelledLeftViewController.bsml" />
+    <EmbeddedResource Include="Views\HeadDistanceTravelledRightViewController.bsml" />
     <None Include="HeadDistanceTravelled.csproj.user" />
     <None Include="LiteDB-5.0.21\LiteDB\LiteDB.csproj" />
     <None Include="LiteDB-5.0.21\LiteDB\LiteDB.snk" />

@@ -14,7 +14,7 @@ namespace HeadDistanceTravelled.Views
     {
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プロパティ
-        public string ResourceName => "HeadDistanceTravelled.Views.HDTSettingView";
+        public string ResourceName => "HeadDistanceTravelled.Views.HDTSettingView.bsml";
         [UIValue("show-distance-hmd")]
         public bool ShowDistanceOnHMD
         {
