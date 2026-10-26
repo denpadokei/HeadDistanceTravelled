@@ -1,6 +1,9 @@
 name: Build and Release
 
 on:
+  # 手动実行は release ジョブの条件 (github.event_name == 'push') に引っかからないので、
+  # ビルド確認用の手動実行はリリースを作成しない。
+  workflow_dispatch:
   pull_request:
     paths:
       - .github/workflows/build-and-release.yml
