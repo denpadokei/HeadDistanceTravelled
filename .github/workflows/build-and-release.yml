@@ -1,14 +1,14 @@
-name: Build and Merge
+name: Build and Release
 
 on:
   pull_request:
     paths:
-      - .github/workflows/build-and-merge.yml
+      - .github/workflows/build-and-release.yml
       - HeadDistanceTravelled/**
   push:
     branches: [main]
     paths:
-      - .github/workflows/build-and-merge.yml
+      - .github/workflows/build-and-release.yml
       - HeadDistanceTravelled/**
 
 jobs:
@@ -17,6 +17,10 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: read
+    outputs:
+      zip-name: ${{ steps.package.outputs.zip-name }}
+      version: ${{ steps.setup.outputs.version }}
+      game-version: ${{ steps.setup.outputs.game-version }}
     steps:
       - name: Check out
         uses: actions/checkout@v7
@@ -25,6 +29,7 @@ jobs:
       # BeatMods が 2026-10-24 に tRPC 基盤 API (v2) へ移行した際に削除された /api/versions
       # を呼んでいるため 404 になる。同じ参照ファイルを、現在も利用できる情報源から組み立てる。
       - name: Set up Beat Saber reference files
+        id: setup
         shell: pwsh
         env:
           # GitHub API を未認証だと 60 req/hour で共有 IP が rate limit に引っかかるため、
@@ -102,6 +107,8 @@ jobs:
           Add-ModFromRelease 'monkeymanboy/BeatSaberMarkupLanguage' 'RELEASE\.zip$'
 
           "BeatSaberDir=$refs" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "version=$($manifest.version)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "game-version=$($manifest.gameVersion)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Build Release
         id: build-release
@@ -110,23 +117,52 @@ jobs:
           # csproj は ..\Refs があるときだけ BeatSaberDir を使うので、CI では明示的に渡す。
           dotnet build ${{ github.workspace }}\HeadDistanceTravelled\HeadDistanceTravelled.csproj -c Release -p:BeatSaberDir="$env:BeatSaberDir" -p:GameDirectory="$env:BeatSaberDir" -p:DisableCopyToPlugins=true
 
+      - name: Pack release zip
+        id: package
+        shell: pwsh
+        run: |
+          # BSMT は CI では zip を作らない (DisableZipRelease=true) ので、artifact ディレクトリから
+          # リリース用の zip を作る。
+          $artifact = '${{ steps.build-release.outputs.artifactpath }}'
+          $zip = Join-Path $env:RUNNER_TEMP ('{0}.zip' -f '${{ steps.build-release.outputs.filename }}')
+          Compress-Archive -Path (Join-Path $artifact '*') -DestinationPath $zip -Force
+          'zip-name={0}' -f '${{ steps.build-release.outputs.filename }}' | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          'zip-path={0}' -f $zip | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
       - name: Upload Release
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ steps.build-release.outputs.filename }}
-          path: ${{ steps.build-release.outputs.artifactpath }}
+          name: ${{ steps.package.outputs.zip-name }}
+          path: ${{ steps.package.outputs.zip-path }}
 
-  merge:
-    name: Merge
+  release:
+    name: Release
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'push'
     permissions:
       contents: write
-      pull-requests: write
     steps:
-      - name: Merge PR
-        # チェックアウトしないので gh にリポジトリを明示する (git の現在地から解れない)。
-        run: gh pr merge --squash --repo "${{ github.repository }}" "${{ github.event.pull_request.number }}"
+      - name: Download release zip
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ needs.build.outputs.zip-name }}
+          path: release
+
+      - name: Publish GitHub release
+        shell: bash
+        run: |
+          # チェックアウトしないので gh にリポジトリを明示する。
+          repo='${{ github.repository }}'
+          tag="v${{ needs.build.outputs.version }}"
+          zip="release/${{ needs.build.outputs.zip-name }}.zip"
+          notes="HeadDistanceTravelled ${{ needs.build.outputs.version }} for Beat Saber ${{ needs.build.outputs.game-version }}."
+
+          if gh release view "$tag" --repo "$repo" >/dev/null 2>&1; then
+            gh release edit "$tag" --repo "$repo" --title "$tag"
+          else
+            gh release create "$tag" --repo "$repo" --title "$tag" --notes "$notes"
+          fi
+          gh release upload "$tag" "$zip" --repo "$repo" --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
