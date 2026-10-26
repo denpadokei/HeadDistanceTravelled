@@ -3,7 +3,7 @@
 	>
 	<settings-container>
 		<bool-setting text='ShowDistance On HMD' value='show-distance-hmd'></bool-setting>
-		<bool-setting text='Show Hand Distance On HMD' value='show-hand-distance-hmd'></bool-setting>
+		<bool-setting text='Show Hand Distance (floating screen at each hand)' value='show-hand-distance'></bool-setting>
       <dropdown-list-setting text='Distance display type in game.' choices='display-type' value='current'></dropdown-list-setting>
 	</settings-container>
 </bg>

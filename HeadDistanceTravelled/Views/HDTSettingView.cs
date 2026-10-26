@@ -22,11 +22,11 @@ namespace HeadDistanceTravelled.Views
             set => PluginConfig.Instance.ShowDistanceOnHMD = value;
         }
 
-        [UIValue("show-hand-distance-hmd")]
-        public bool ShowHandDistanceOnHMD
+        [UIValue("show-hand-distance")]
+        public bool ShowHandDistance
         {
-            get => PluginConfig.Instance.ShowHandDistanceOnHMD;
-            set => PluginConfig.Instance.ShowHandDistanceOnHMD = value;
+            get => PluginConfig.Instance.ShowHandDistance;
+            set => PluginConfig.Instance.ShowHandDistance = value;
         }
 
         [UIValue("display-type")]

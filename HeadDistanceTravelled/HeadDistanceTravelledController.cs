@@ -25,6 +25,10 @@ namespace HeadDistanceTravelled
         public float LeftHandDistance => this._leftHandDistance;
         public float RightHandDistance => this._rightHandDistance;
         public float TotalHandDistance => this._leftHandDistance + this._rightHandDistance;
+        public Vector3 LeftHandPosition => this._leftHandPosition;
+        public Vector3 RightHandPosition => this._rightHandPosition;
+        public bool LeftHandTracked => this._leftHandTracked;
+        public bool RightHandTracked => this._rightHandTracked;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プライベートメソッド
@@ -39,32 +43,37 @@ namespace HeadDistanceTravelled
                 this.OnDistanceChanged?.Invoke(this._hmdDistance, in this._hmdPosition, in this._hmdRotation);
             }
         }
+        private void FetchHandPositions()
+        {
+            // コネクト解除で失敗する可能性があるため戻り値を見てTrackedフラグを更新する
+            this._leftHandTracked = this._platformHelper.GetNodePose(XRNode.LeftHand, 0, out this._leftHandPosition, out _);
+            this._rightHandTracked = this._platformHelper.GetNodePose(XRNode.RightHand, 0, out this._rightHandPosition, out _);
+        }
         private void RecordHandPositions()
         {
-            if (this._platformHelper.GetNodePose(XRNode.LeftHand, 0, out var leftPosition, out _)) {
-                var distance = Vector3.Distance(leftPosition, this._prevLeftHandPosition);
+            if (this._leftHandTracked) {
+                var distance = Vector3.Distance(this._leftHandPosition, this._prevLeftHandPosition);
                 if (this._movementSensitivityThreshold < distance) {
                     this._leftHandDistance += distance;
-                    this._prevLeftHandPosition = leftPosition;
+                    this._prevLeftHandPosition = this._leftHandPosition;
                 }
             }
-            if (this._platformHelper.GetNodePose(XRNode.RightHand, 0, out var rightPosition, out _)) {
-                var distance = Vector3.Distance(rightPosition, this._prevRightHandPosition);
+            if (this._rightHandTracked) {
+                var distance = Vector3.Distance(this._rightHandPosition, this._prevRightHandPosition);
                 if (this._movementSensitivityThreshold < distance) {
                     this._rightHandDistance += distance;
-                    this._prevRightHandPosition = rightPosition;
+                    this._prevRightHandPosition = this._rightHandPosition;
                 }
             }
         }
         private void ResetPreviousPositions()
         {
             this._platformHelper.GetNodePose(XRNode.Head, 0, out this._prevHMDPosition, out _);
-            // コネクト解除で失敗する可能性があるため手の側は戻り値を見る
-            if (this._platformHelper.GetNodePose(XRNode.LeftHand, 0, out var leftPosition, out _)) {
-                this._prevLeftHandPosition = leftPosition;
+            if (this._leftHandTracked) {
+                this._prevLeftHandPosition = this._leftHandPosition;
             }
-            if (this._platformHelper.GetNodePose(XRNode.RightHand, 0, out var rightPosition, out _)) {
-                this._prevRightHandPosition = rightPosition;
+            if (this._rightHandTracked) {
+                this._prevRightHandPosition = this._rightHandPosition;
             }
         }
         private void OnDidResumeEvent()
@@ -89,6 +98,10 @@ namespace HeadDistanceTravelled
         private Quaternion _hmdRotation;
         private Vector3 _prevLeftHandPosition = Vector3.zero;
         private Vector3 _prevRightHandPosition = Vector3.zero;
+        private Vector3 _leftHandPosition = Vector3.zero;
+        private Vector3 _rightHandPosition = Vector3.zero;
+        private bool _leftHandTracked;
+        private bool _rightHandTracked;
         private float _leftHandDistance = 0;
         private float _rightHandDistance = 0;
         private readonly float _movementSensitivityThreshold = 0.01f;
@@ -161,10 +174,12 @@ namespace HeadDistanceTravelled
         #region Monobehaviour Messages
         public void Start()
         {
+            this.FetchHandPositions();
             this.ResetPreviousPositions();
         }
         public void Update()
         {
+            this.FetchHandPositions();
             if (this._isPause) {
                 this.ResetPreviousPositions();
                 return;

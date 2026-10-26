@@ -5,7 +5,6 @@ using HeadDistanceTravelled.Configuration;
 using HeadDistanceTravelled.Databases;
 using HeadDistanceTravelled.Databases.Interfaces;
 using HeadDistanceTravelled.Models;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -30,31 +29,6 @@ namespace HeadDistanceTravelled.Views
 
             set => this.SetProperty(ref this._hmdDistanceText, value);
         }
-
-        [UIValue("show-hand-distance")]
-        public bool ShowHandDistance => PluginConfig.Instance.ShowHandDistanceOnHMD;
-
-        /// <summary>左手の距離のテキスト を取得、設定</summary>
-        private string _leftHandDistanceText;
-        [UIValue("left-hand-distance-text")]
-        /// <summary>左手の距離のテキスト を取得、設定</summary>
-        public string LeftHandDistanceText
-        {
-            get => this._leftHandDistanceText;
-
-            set => this.SetProperty(ref this._leftHandDistanceText, value);
-        }
-
-        /// <summary>右手の距離のテキスト を取得、設定</summary>
-        private string _rightHandDistanceText;
-        [UIValue("right-hand-distance-text")]
-        /// <summary>右手の距離のテキスト を取得、設定</summary>
-        public string RightHandDistanceText
-        {
-            get => this._rightHandDistanceText;
-
-            set => this.SetProperty(ref this._rightHandDistanceText, value);
-        }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // コマンド
@@ -69,8 +43,7 @@ namespace HeadDistanceTravelled.Views
         #region // パブリックメソッド
         public void Initialize()
         {
-            var height = PluginConfig.Instance.ShowHandDistanceOnHMD ? 60 : 40;
-            this._floatingScreen = FloatingScreen.CreateFloatingScreen(new Vector2(120, height), false, Vector3.zero, Quaternion.identity);
+            this._floatingScreen = FloatingScreen.CreateFloatingScreen(new Vector2(120, 40), false, Vector3.zero, Quaternion.identity);
             // UI Layer
             this._floatingScreen.gameObject.layer = 5;
             this._floatingScreen.SetRootViewController(this, AnimationType.None);
@@ -108,10 +81,6 @@ namespace HeadDistanceTravelled.Views
         private void CreateDistanceText()
         {
             this.HMDDistanceText = $"{this._controller.HMDDistance + this._startDistance:#0.00} <size=50%>m</size>";
-            if (PluginConfig.Instance.ShowHandDistanceOnHMD) {
-                this.LeftHandDistanceText = $"L {this._controller.LeftHandDistance + this._startLeftHandDistance:#0.00} <size=50%>m</size>";
-                this.RightHandDistanceText = $"R {this._controller.RightHandDistance + this._startRightHandDistance:#0.00} <size=50%>m</size>";
-            }
         }
 
         protected override void OnDestroy()
@@ -128,8 +97,6 @@ namespace HeadDistanceTravelled.Views
         private FloatingScreen _floatingScreen;
         private static readonly Vector3 s_localOffset = new Vector3(0, 0.4f, 0);
         private float _startDistance = 0;
-        private float _startLeftHandDistance = 0;
-        private float _startRightHandDistance = 0;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
@@ -140,23 +107,15 @@ namespace HeadDistanceTravelled.Views
             switch (PluginConfig.Instance.DistanceTypeValue) {
                 case PluginConfig.DistanceType.Song:
                     _startDistance = 0;
-                    _startLeftHandDistance = 0;
-                    _startRightHandDistance = 0;
                     break;
                 case PluginConfig.DistanceType.Today:
                     _startDistance = database.Find<DistanceInformation>(x => Plugin.LastLaunchDate <= x.CreatedAt).Sum(x => x.Distance);
-                    _startLeftHandDistance = database.Find<HandDistanceInformation>(x => Plugin.LastLaunchDate <= x.CreatedAt).Sum(x => x.LeftDistance);
-                    _startRightHandDistance = database.Find<HandDistanceInformation>(x => Plugin.LastLaunchDate <= x.CreatedAt).Sum(x => x.RightDistance);
                     break;
                 case PluginConfig.DistanceType.Total:
                     _startDistance = database.Find<DistanceInformation>(x => true).Sum(x => x.Distance);
-                    _startLeftHandDistance = database.Find<HandDistanceInformation>(x => true).Sum(x => x.LeftDistance);
-                    _startRightHandDistance = database.Find<HandDistanceInformation>(x => true).Sum(x => x.RightDistance);
                     break;
                 case PluginConfig.DistanceType.Manual:
                     _startDistance = manualMeasurementController.GetTotalDistance(manualMeasurementController.CurrentSessionGUID);
-                    _startLeftHandDistance = database.Find<HandDistanceInformation>(x => x.SessionGUID == manualMeasurementController.CurrentSessionGUID).Sum(x => x.LeftDistance);
-                    _startRightHandDistance = database.Find<HandDistanceInformation>(x => x.SessionGUID == manualMeasurementController.CurrentSessionGUID).Sum(x => x.RightDistance);
                     break;
                 default:
                     break;

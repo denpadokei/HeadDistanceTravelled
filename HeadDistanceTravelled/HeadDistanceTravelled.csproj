@@ -178,6 +178,9 @@
     <EmbeddedResource Include="Views\HMDDistanceFlowtingScreen.bsml">
       <DependentUpon>HMDDistanceFloatingScreen.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\HandDistanceFloatingScreen.bsml">
+      <DependentUpon>HandDistanceFloatingScreen.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\HDTSettingView.bsml">
       <DependentUpon>HDTSettingView.cs</DependentUpon>
     </EmbeddedResource>
