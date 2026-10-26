@@ -26,11 +26,21 @@ jobs:
       # を呼んでいるため 404 になる。同じ参照ファイルを、現在も利用できる情報源から組み立てる。
       - name: Set up Beat Saber reference files
         shell: pwsh
+        env:
+          # GitHub API を未認証だと 60 req/hour で共有 IP が rate limit に引っかかるため、
+          # GITHUB_TOKEN で認証する。
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $ErrorActionPreference = 'Stop'
           Add-Type -AssemblyName System.IO.Compression.FileSystem
 
           $headers = @{ 'User-Agent' = 'HeadDistanceTravelled-CI' }
+          $ghHeaders = @{
+            'User-Agent'    = 'HeadDistanceTravelled-CI'
+            'Accept'         = 'application/vnd.github+json'
+            'X-GitHub-Api-Version' = '2022-11-28'
+            'Authorization'  = "Bearer $env:GITHUB_TOKEN"
+          }
           $manifest = Get-Content 'HeadDistanceTravelled/manifest.json' -Raw | ConvertFrom-Json
           $gameVersion = $manifest.gameVersion
 
@@ -65,7 +75,7 @@ jobs:
 
           # ゲーム参照アセンブリ (Beat Saber_Data/Managed)
           $zipball = Join-Path $env:RUNNER_TEMP 'refassemblies.zip'
-          Invoke-WebRequest "https://api.github.com/repos/nicoco007/BeatSaberReferenceAssemblies/zipball/refs/tags/v$gameVersion" -Headers $headers -OutFile $zipball
+          Invoke-WebRequest "https://api.github.com/repos/nicoco007/BeatSaberReferenceAssemblies/zipball/refs/tags/v$gameVersion" -Headers $ghHeaders -OutFile $zipball
           Extract-Zip $zipball 2 $null
 
           # IPA.Loader.dll と Libs/ を BSIPA から。移行後の API には mod 詳細エンドポイントが
@@ -80,7 +90,7 @@ jobs:
           # BSML と SiraUtil は GitHub Releases から (移行後の BeatMods のデータは不完全で、
           # SiraUtil がリストに含まれず BSML も古いインポート版のままのため)。
           function Add-ModFromRelease($repo, $assetFilter) {
-            $release = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest" -Headers $headers
+            $release = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest" -Headers $ghHeaders
             $asset = $release.assets | Where-Object { $_.name -match $assetFilter } | Select-Object -First 1
             if (-not $asset) { throw "No release asset in $repo matching $assetFilter" }
             $out = Join-Path $env:RUNNER_TEMP 'mod.zip'
