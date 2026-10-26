@@ -9,6 +9,6 @@
     </horizontal>
     <text text='HeadDistanceTravelled - Manual' />
     <text text="~status" font-size="5" color="red" overflow-mode="Overflow" align="Center"/>
-    <text id="distance-text3" text="~manual-distance" font-size="40" overflow-mode="Overflow" align="Center"/>
+    <text id="distance-text3" text="~manual-distance" font-size="4" overflow-mode="Overflow" align="Center"/>
   </vertical>
 </bg>
