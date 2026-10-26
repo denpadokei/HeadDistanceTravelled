@@ -8,6 +8,13 @@ namespace HeadDistanceTravelled
         float HMDDistance { get; }
         Vector3 HMDPositon { get; }
         Quaternion HMDRotation { get; }
+        float LeftHandDistance { get; }
+        float RightHandDistance { get; }
+        float TotalHandDistance { get; }
+        Vector3 LeftHandPosition { get; }
+        Vector3 RightHandPosition { get; }
+        bool LeftHandTracked { get; }
+        bool RightHandTracked { get; }
         event HMDDistanceChangedEventHandler OnDistanceChanged;
         event Action<IHeadDistanceTravelledController> OnDestroied;
     }

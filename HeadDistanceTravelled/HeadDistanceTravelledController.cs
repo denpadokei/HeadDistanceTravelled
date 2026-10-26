@@ -22,6 +22,13 @@ namespace HeadDistanceTravelled
         public float HMDDistance => this._hmdDistance;
         public Vector3 HMDPositon => this._hmdPosition;
         public Quaternion HMDRotation => this._hmdRotation;
+        public float LeftHandDistance => this._leftHandDistance;
+        public float RightHandDistance => this._rightHandDistance;
+        public float TotalHandDistance => this._leftHandDistance + this._rightHandDistance;
+        public Vector3 LeftHandPosition => this._leftHandPosition;
+        public Vector3 RightHandPosition => this._rightHandPosition;
+        public bool LeftHandTracked => this._leftHandTracked;
+        public bool RightHandTracked => this._rightHandTracked;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プライベートメソッド
@@ -34,6 +41,39 @@ namespace HeadDistanceTravelled
                 this._hmdDistance += distance;
                 this._prevHMDPosition = this._hmdPosition;
                 this.OnDistanceChanged?.Invoke(this._hmdDistance, in this._hmdPosition, in this._hmdRotation);
+            }
+        }
+        private void FetchHandPositions()
+        {
+            // コネクト解除で失敗する可能性があるため戻り値を見てTrackedフラグを更新する
+            this._leftHandTracked = this._platformHelper.GetNodePose(XRNode.LeftHand, 0, out this._leftHandPosition, out _);
+            this._rightHandTracked = this._platformHelper.GetNodePose(XRNode.RightHand, 0, out this._rightHandPosition, out _);
+        }
+        private void RecordHandPositions()
+        {
+            if (this._leftHandTracked) {
+                var distance = Vector3.Distance(this._leftHandPosition, this._prevLeftHandPosition);
+                if (this._movementSensitivityThreshold < distance) {
+                    this._leftHandDistance += distance;
+                    this._prevLeftHandPosition = this._leftHandPosition;
+                }
+            }
+            if (this._rightHandTracked) {
+                var distance = Vector3.Distance(this._rightHandPosition, this._prevRightHandPosition);
+                if (this._movementSensitivityThreshold < distance) {
+                    this._rightHandDistance += distance;
+                    this._prevRightHandPosition = this._rightHandPosition;
+                }
+            }
+        }
+        private void ResetPreviousPositions()
+        {
+            this._platformHelper.GetNodePose(XRNode.Head, 0, out this._prevHMDPosition, out _);
+            if (this._leftHandTracked) {
+                this._prevLeftHandPosition = this._leftHandPosition;
+            }
+            if (this._rightHandTracked) {
+                this._prevRightHandPosition = this._rightHandPosition;
             }
         }
         private void OnDidResumeEvent()
@@ -56,6 +96,14 @@ namespace HeadDistanceTravelled
         private Vector3 _prevHMDPosition = Vector3.zero;
         private Vector3 _hmdPosition = Vector3.zero;
         private Quaternion _hmdRotation;
+        private Vector3 _prevLeftHandPosition = Vector3.zero;
+        private Vector3 _prevRightHandPosition = Vector3.zero;
+        private Vector3 _leftHandPosition = Vector3.zero;
+        private Vector3 _rightHandPosition = Vector3.zero;
+        private bool _leftHandTracked;
+        private bool _rightHandTracked;
+        private float _leftHandDistance = 0;
+        private float _rightHandDistance = 0;
         private readonly float _movementSensitivityThreshold = 0.01f;
         private float _hmdDistance = 0;
         private IGamePause _pauseController;
@@ -126,22 +174,25 @@ namespace HeadDistanceTravelled
         #region Monobehaviour Messages
         public void Start()
         {
-            this._platformHelper.GetNodePose(XRNode.Head, 0, out this._prevHMDPosition, out _);
+            this.FetchHandPositions();
+            this.ResetPreviousPositions();
         }
         public void Update()
         {
+            this.FetchHandPositions();
             if (this._isPause) {
-                this._platformHelper.GetNodePose(XRNode.Head, 0, out this._prevHMDPosition, out _);
+                this.ResetPreviousPositions();
                 return;
             }
             if (this._audioTimeSource.songTime < this._startTime || this._endTime < this._audioTimeSource.songTime) {
-                this._platformHelper.GetNodePose(XRNode.Head, 0, out this._prevHMDPosition, out _);
+                this.ResetPreviousPositions();
                 return;
             }
             if (this._isfpfc) {
                 return;
             }
             this.RecordHMDPosition();
+            this.RecordHandPositions();
         }
         public void OnDestroy()
         {
@@ -163,6 +214,21 @@ namespace HeadDistanceTravelled
             var inserted = _hDTDatabase.Insert(info);
             Plugin.Log.Info($"Id={info.ID}");
             this._manualMeasurementController.Save(info);
+            var handInfo = new HandDistanceInformation
+            {
+                LevelID = this._beatmapLevel.levelID,
+                SongName = this._beatmapLevel.songName,
+                Difficurity = this._key.difficulty.ToString(),
+                BeatmapCharacteristicTextId = info.BeatmapCharacteristicTextId,
+                LeftDistance = this._leftHandDistance,
+                RightDistance = this._rightHandDistance,
+                CreatedAt = DateTime.Now,
+                SessionGUID = this._manualMeasurementController.MeasurementStatusValue == ManualMeasurementController.MeasurementStatus.Measuring
+                    ? this._manualMeasurementController.CurrentSessionGUID
+                    : Guid.Empty,
+            };
+            _hDTDatabase.Insert(handInfo);
+            Plugin.Log.Info($"HandId={handInfo.ID}");
             try {
                 this.OnDestroied?.Invoke(this);
             }

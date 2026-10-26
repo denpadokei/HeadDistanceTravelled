@@ -12,6 +12,10 @@ namespace HeadDistanceTravelled.Installers
             if (PluginConfig.Instance.ShowDistanceOnHMD) {
                 this.Container.BindInterfacesAndSelfTo<HMDDistanceFloatingScreen>().FromNewComponentAsViewController().AsCached().NonLazy();
             }
+            if (PluginConfig.Instance.ShowHandDistance) {
+                this.Container.BindInterfacesAndSelfTo<LeftHandDistanceFloatingScreen>().FromNewComponentAsViewController().AsCached().NonLazy();
+                this.Container.BindInterfacesAndSelfTo<RightHandDistanceFloatingScreen>().FromNewComponentAsViewController().AsCached().NonLazy();
+            }
         }
     }
 }
