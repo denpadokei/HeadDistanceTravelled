@@ -3,7 +3,7 @@
   "id": "HeadDistanceTravelled",
   "name": "HeadDistanceTravelled",
   "author": "denpadokei",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "Record HMD and hand distance travelled.",
   "gameVersion": "1.40.8",
   "dependsOn": {
