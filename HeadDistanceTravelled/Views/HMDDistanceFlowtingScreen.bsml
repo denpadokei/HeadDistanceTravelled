@@ -1,7 +1,13 @@
 ﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
 	xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'
 	>
-	<horizontal horizontal-fit="PreferredSize" >
-		<text text="~hmd-distance-text" font-size="20"/>
-	</horizontal>
+	<vertical horizontal-fit="PreferredSize" >
+		<horizontal horizontal-fit="PreferredSize" >
+			<text text="~hmd-distance-text" font-size="20"/>
+		</horizontal>
+		<vertical horizontal-fit="PreferredSize" active="~show-hand-distance" >
+			<text text="~left-hand-distance-text" font-size="15"/>
+			<text text="~right-hand-distance-text" font-size="15"/>
+		</vertical>
+	</vertical>
 </bg>

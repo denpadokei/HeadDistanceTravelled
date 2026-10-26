@@ -22,6 +22,13 @@ namespace HeadDistanceTravelled.Views
             set => PluginConfig.Instance.ShowDistanceOnHMD = value;
         }
 
+        [UIValue("show-hand-distance-hmd")]
+        public bool ShowHandDistanceOnHMD
+        {
+            get => PluginConfig.Instance.ShowHandDistanceOnHMD;
+            set => PluginConfig.Instance.ShowHandDistanceOnHMD = value;
+        }
+
         [UIValue("display-type")]
         public List<object> DisplayTypes { get; } = new List<object>(Enum.GetValues(typeof(PluginConfig.DistanceType)).OfType<PluginConfig.DistanceType>().Select(x => x.ToString()));
         [UIValue("current")]

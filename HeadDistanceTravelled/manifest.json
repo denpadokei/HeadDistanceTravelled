@@ -3,12 +3,12 @@
   "id": "HeadDistanceTravelled",
   "name": "HeadDistanceTravelled",
   "author": "denpadokei",
-  "version": "2.0.1",
-  "description": "",
-  "gameVersion": "1.39.1",
+  "version": "2.1.0",
+  "description": "Record HMD and hand distance travelled.",
+  "gameVersion": "1.40.8",
   "dependsOn": {
     "BSIPA": "^4.3.5",
-    "SiraUtil": "^3.1.14",
+    "SiraUtil": "^3.2.0",
     "System.Buffers": "^4.6.0"
   }
 }

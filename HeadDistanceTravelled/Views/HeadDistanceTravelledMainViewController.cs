@@ -28,6 +28,28 @@ namespace HeadDistanceTravelled.Views
             set => this.SetProperty(ref this._hmdDistance, value);
         }
 
+        /// <summary>左手の総移動距離 を取得、設定</summary>
+        private string _leftHandDistance;
+        [UIValue("left-hand-distance")]
+        /// <summary>左手の総移動距離 を取得、設定</summary>
+        public string LeftHandDistance
+        {
+            get => this._leftHandDistance;
+
+            set => this.SetProperty(ref this._leftHandDistance, value);
+        }
+
+        /// <summary>右手の総移動距離 を取得、設定</summary>
+        private string _rightHandDistance;
+        [UIValue("right-hand-distance")]
+        /// <summary>右手の総移動距離 を取得、設定</summary>
+        public string RightHandDistance
+        {
+            get => this._rightHandDistance;
+
+            set => this.SetProperty(ref this._rightHandDistance, value);
+        }
+
         /// <summary>説明 を取得、設定</summary>
         private bool _show;
         /// <summary>説明 を取得、設定</summary>
@@ -64,6 +86,9 @@ namespace HeadDistanceTravelled.Views
             var todayDt = _database.Find<DistanceInformation>(x => true).Sum(x => x.Distance);
             this.HMDDistance = $"<size=150%>{todayDt:#.000}</size> m";
             Plugin.Log.Info(this.HMDDistance);
+            var handInfos = _database.Find<HandDistanceInformation>(x => true).ToArray();
+            this.LeftHandDistance = $"Left hand: {handInfos.Sum(x => x.LeftDistance):#.000} m";
+            this.RightHandDistance = $"Right hand: {handInfos.Sum(x => x.RightDistance):#.000} m";
         }
 
         protected override void OnPropertyChanged(PropertyChangedEventArgs e)

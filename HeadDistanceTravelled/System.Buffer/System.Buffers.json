@@ -5,7 +5,7 @@
   "author": "Microsoft",
   "version": "4.6.0",
   "description": "",
-  "gameVersion": "1.39.1",
+  "gameVersion": "1.40.8",
   "files": [
     "Libs/System.Buffers.dll"
   ]

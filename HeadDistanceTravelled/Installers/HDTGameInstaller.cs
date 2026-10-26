@@ -9,7 +9,7 @@ namespace HeadDistanceTravelled.Installers
         public override void InstallBindings()
         {
             this.Container.BindInterfacesAndSelfTo<HeadDistanceTravelledController>().FromNewComponentOnNewGameObject().AsCached().NonLazy();
-            if (PluginConfig.Instance.ShowDistanceOnHMD) {
+            if (PluginConfig.Instance.ShowDistanceOnHMD || PluginConfig.Instance.ShowHandDistanceOnHMD) {
                 this.Container.BindInterfacesAndSelfTo<HMDDistanceFloatingScreen>().FromNewComponentAsViewController().AsCached().NonLazy();
             }
         }

@@ -4,5 +4,7 @@
 	<vertical horizontal-fit="PreferredSize" active="~show-view" preferred-width="100" >
 		<text text='HeadDistanceTravelled - Total distance' />
 		<text id="distance-text2" text="~hmd-distance" font-size="40" overflow-mode="Overflow" align="Center"/>
+		<text text="~left-hand-distance" font-size="30" overflow-mode="Overflow" align="Center"/>
+		<text text="~right-hand-distance" font-size="30" overflow-mode="Overflow" align="Center"/>
 	</vertical>
 </bg>
