@@ -1,0 +1,168 @@
+name: Build and Release
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/build-and-release.yml
+      - HeadDistanceTravelled/**
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/build-and-release.yml
+      - HeadDistanceTravelled/**
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    outputs:
+      zip-name: ${{ steps.package.outputs.zip-name }}
+      version: ${{ steps.setup.outputs.version }}
+      game-version: ${{ steps.setup.outputs.game-version }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      # Auros/SiraUtil の build.yml と同じ流れだが、nicoco007/setup-beat-saber@v1 は
+      # BeatMods が 2026-10-24 に tRPC 基盤 API (v2) へ移行した際に削除された /api/versions
+      # を呼んでいるため 404 になる。同じ参照ファイルを、現在も利用できる情報源から組み立てる。
+      - name: Set up Beat Saber reference files
+        id: setup
+        shell: pwsh
+        env:
+          # GitHub API を未認証だと 60 req/hour で共有 IP が rate limit に引っかかるため、
+          # GITHUB_TOKEN で認証する。
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+          $headers = @{ 'User-Agent' = 'HeadDistanceTravelled-CI' }
+          $ghHeaders = @{
+            'User-Agent'    = 'HeadDistanceTravelled-CI'
+            'Accept'         = 'application/vnd.github+json'
+            'X-GitHub-Api-Version' = '2022-11-28'
+            'Authorization'  = "Bearer $env:GITHUB_TOKEN"
+          }
+          $manifest = Get-Content 'HeadDistanceTravelled/manifest.json' -Raw | ConvertFrom-Json
+          $gameVersion = $manifest.gameVersion
+
+          $refs = Join-Path $env:RUNNER_TEMP 'BeatSaberDir'
+          New-Item -ItemType Directory -Force -Path $refs | Out-Null
+
+          function Extract-Zip($zipPath, $skipSegments, $remap) {
+            $zip = [IO.Compression.ZipFile]::OpenRead($zipPath)
+            foreach ($entry in $zip.Entries) {
+              if ($entry.FullName.EndsWith('/')) { continue }
+              $parts = $entry.FullName -split '/'
+              if ($parts.Count -le $skipSegments) { continue }
+              $rel = ($parts[$skipSegments..($parts.Count - 1)] -join '/')
+              if ($remap) {
+                $rel = & $remap $rel
+                if (-not $rel) { continue }
+              }
+              $dest = Join-Path $refs ($rel -replace '/', '\')
+              New-Item -ItemType Directory -Force -Path (Split-Path $dest) | Out-Null
+              [IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $dest, $true)
+            }
+            $zip.Dispose()
+          }
+
+          # BSIPA の zip は Beat SaberDir 相対の IPA/Data と IPA/Libs を含む
+          # (setup-beat-saber と同じマッピング)。
+          $ipaRemap = {
+            if ($args[0].StartsWith('IPA/Data/')) { 'Beat Saber_Data/' + $args[0].Substring(9) }
+            elseif ($args[0].StartsWith('IPA/Libs/')) { 'Libs/' + $args[0].Substring(9) }
+            else { $null }
+          }
+
+          # ゲーム参照アセンブリ (Beat Saber_Data/Managed)
+          $zipball = Join-Path $env:RUNNER_TEMP 'refassemblies.zip'
+          Invoke-WebRequest "https://api.github.com/repos/nicoco007/BeatSaberReferenceAssemblies/zipball/refs/tags/v$gameVersion" -Headers $ghHeaders -OutFile $zipball
+          Extract-Zip $zipball 2 $null
+
+          # IPA.Loader.dll と Libs/ を BSIPA から。移行後の API には mod 詳細エンドポイントが
+          # ないため、mods リストの最新エントリから取得する。
+          $bsipa = (Invoke-RestMethod 'https://beatmods.com/api/v2/mods?gameName=BeatSaber' -Headers $headers).mods |
+            Where-Object { $_.mod.name -eq 'BSIPA' } | Select-Object -First 1
+          if (-not $bsipa) { throw 'BSIPA not found on BeatMods' }
+          $bsipaZip = Join-Path $env:RUNNER_TEMP 'bsipa.zip'
+          Invoke-WebRequest "https://beatmods.com/cdn/mod/$($bsipa.latest.zipHash).zip" -Headers $headers -OutFile $bsipaZip
+          Extract-Zip $bsipaZip 0 $ipaRemap
+
+          # BSML と SiraUtil は GitHub Releases から (移行後の BeatMods のデータは不完全で、
+          # SiraUtil がリストに含まれず BSML も古いインポート版のままのため)。
+          function Add-ModFromRelease($repo, $assetFilter) {
+            $release = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest" -Headers $ghHeaders
+            $asset = $release.assets | Where-Object { $_.name -match $assetFilter } | Select-Object -First 1
+            if (-not $asset) { throw "No release asset in $repo matching $assetFilter" }
+            $out = Join-Path $env:RUNNER_TEMP 'mod.zip'
+            Invoke-WebRequest $asset.browser_download_url -Headers $headers -OutFile $out
+            Extract-Zip $out 0 $null
+          }
+
+          Add-ModFromRelease 'Auros/SiraUtil' '\.zip$'
+          Add-ModFromRelease 'monkeymanboy/BeatSaberMarkupLanguage' 'RELEASE\.zip$'
+
+          "BeatSaberDir=$refs" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "version=$($manifest.version)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "game-version=$($manifest.gameVersion)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Build Release
+        id: build-release
+        shell: pwsh
+        run: |
+          # csproj は ..\Refs があるときだけ BeatSaberDir を使うので、CI では明示的に渡す。
+          dotnet build ${{ github.workspace }}\HeadDistanceTravelled\HeadDistanceTravelled.csproj -c Release -p:BeatSaberDir="$env:BeatSaberDir" -p:GameDirectory="$env:BeatSaberDir" -p:DisableCopyToPlugins=true
+
+      - name: Pack release zip
+        id: package
+        shell: pwsh
+        run: |
+          # BSMT は CI では zip を作らない (DisableZipRelease=true) ので、artifact ディレクトリから
+          # リリース用の zip を作る。
+          $artifact = '${{ steps.build-release.outputs.artifactpath }}'
+          $zip = Join-Path $env:RUNNER_TEMP ('{0}.zip' -f '${{ steps.build-release.outputs.filename }}')
+          Compress-Archive -Path (Join-Path $artifact '*') -DestinationPath $zip -Force
+          'zip-name={0}' -f '${{ steps.build-release.outputs.filename }}' | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          'zip-path={0}' -f $zip | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Upload Release
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.package.outputs.zip-name }}
+          path: ${{ steps.package.outputs.zip-path }}
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push'
+    permissions:
+      contents: write
+    steps:
+      - name: Download release zip
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ needs.build.outputs.zip-name }}
+          path: release
+
+      - name: Publish GitHub release
+        shell: bash
+        run: |
+          # チェックアウトしないので gh にリポジトリを明示する。
+          repo='${{ github.repository }}'
+          tag="v${{ needs.build.outputs.version }}"
+          zip="release/${{ needs.build.outputs.zip-name }}.zip"
+          notes="HeadDistanceTravelled ${{ needs.build.outputs.version }} for Beat Saber ${{ needs.build.outputs.game-version }}."
+
+          if gh release view "$tag" --repo "$repo" >/dev/null 2>&1; then
+            gh release edit "$tag" --repo "$repo" --title "$tag"
+          else
+            gh release create "$tag" --repo "$repo" --title "$tag" --notes "$notes"
+          fi
+          gh release upload "$tag" "$zip" --repo "$repo" --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
