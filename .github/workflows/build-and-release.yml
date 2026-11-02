@@ -141,7 +141,7 @@ jobs:
 
       - name: Build Release
         id: build-release
-        shell: pwsj
+        shell: pwsh
         run: |
           # csproj は ..\Refs があるときだけ BeatSaberDir を使うので、CI では明示的に渡す。
           dotnet build ${{ github.workspace }}\HeadDistanceTravelled\HeadDistanceTravelled.csproj -c Release -p:BeatSaberDir="$env:BeatSaberDir" -p:GameDirectory="$env:BeatSaberDir" -p:DisableCopyToPlugins=true
