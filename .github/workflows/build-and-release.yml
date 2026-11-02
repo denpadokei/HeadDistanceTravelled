@@ -1,7 +1,7 @@
 name: Build and Release
 
 on:
-  # 手动実行は release ジョブの条件 (github.event_name == 'push') に引っかからないので、
+  # 手动実行は release ジョブの条件 (タグ / main への push) に引っかからないので、
   # ビルド確認用の手動実行はリリースを作成しない。
   workflow_dispatch:
   pull_request:
@@ -9,7 +9,15 @@ on:
       - .github/workflows/build-and-release.yml
       - HeadDistanceTravelled/**
   push:
+    # main への push: ビルドして v<manifest version> タグのリリースを作成する。
+    # タグの push: そのタグが指すコミットをビルドし、同じタグのリリースに成果物を添付する
+    # (paths フィルタはタグ push では評価されない)。
+    # なお GITHUB_TOKEN で作成したタグはワークフローを起動しないため、main への push では
+    # その実行自身がタグ作成とリリース添付まで行う。
     branches: [main]
+    tags:
+      - 'v*'
+      - '[0-9]*'
     paths:
       - .github/workflows/build-and-release.yml
       - HeadDistanceTravelled/**
@@ -24,9 +32,17 @@ jobs:
       zip-name: ${{ steps.package.outputs.zip-name }}
       version: ${{ steps.setup.outputs.version }}
       game-version: ${{ steps.setup.outputs.game-version }}
+      # リリース先のタグ。タグ push ならそのタグ名、main push なら v<manifest version>。
+      tag: ${{ steps.setup.outputs.tag }}
+      # 実際にビルドしたコミット。リリースの --target に使う。
+      commit: ${{ steps.setup.outputs.commit }}
     steps:
       - name: Check out
         uses: actions/checkout@v7
+        with:
+          # タグ push のときはタグが指すコミット (github.sha) をビルドする。
+          # ブランチ push / PR でもそのイベントのコミットになる。
+          ref: ${{ github.sha }}
 
       # Auros/SiraUtil の build.yml と同じ流れだが、nicoco007/setup-beat-saber@v1 は
       # BeatMods が 2026-10-24 に tRPC 基盤 API (v2) へ移行した際に削除された /api/versions
@@ -51,6 +67,14 @@ jobs:
           }
           $manifest = Get-Content 'HeadDistanceTravelled/manifest.json' -Raw | ConvertFrom-Json
           $gameVersion = $manifest.gameVersion
+
+          # タグ push ではタグ名をそのままリリース先にする。main への push では
+          # manifest のバージョンから v 付きタグを決める (従来の挙動)。
+          if ($env:GITHUB_REF -like 'refs/tags/*') {
+            $tag = $env:GITHUB_REF_NAME
+          } else {
+            $tag = 'v' + $manifest.version
+          }
 
           $refs = Join-Path $env:RUNNER_TEMP 'BeatSaberDir'
           New-Item -ItemType Directory -Force -Path $refs | Out-Null
@@ -112,6 +136,8 @@ jobs:
           "BeatSaberDir=$refs" | Out-File -FilePath $env:GITHUB_ENV -Append
           "version=$($manifest.version)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           "game-version=$($manifest.gameVersion)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "commit=$($env:GITHUB_SHA)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Build Release
         id: build-release
@@ -142,7 +168,8 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'push'
+    # main への push (タグ作成) とタグの push のときだけリリースする。
+    if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     permissions:
       contents: write
     steps:
@@ -157,14 +184,28 @@ jobs:
         run: |
           # チェックアウトしないので gh にリポジトリを明示する。
           repo='${{ github.repository }}'
-          tag="v${{ needs.build.outputs.version }}"
+          tag='${{ needs.build.outputs.tag }}'
+          sha='${{ needs.build.outputs.commit }}'
           zip="release/${{ needs.build.outputs.zip-name }}.zip"
-          notes="HeadDistanceTravelled ${{ needs.build.outputs.version }} for Beat Saber ${{ needs.build.outputs.game-version }}."
+          notes="HeadDistanceTravelled ${{ needs.build.outputs.version }} for Beat Saber ${{ needs.build.outputs.game-version }} (${sha:0:7})."
+
+          # タグが既にある場合は、そのタグが指すコミットとビルドしたコミットを突き合わせる。
+          # 一致しないときは成果物がタグのコミットと食い違うのでリリースしない
+          # (manifest のバージョンを上げ忘れて main に push した場合など)。
+          tag_sha=$(gh api "repos/$repo/commits/$tag" --jq .sha 2>/dev/null || true)
+          if [ -n "$tag_sha" ] && [ "$tag_sha" != "$sha" ]; then
+            echo "::warning::tag '$tag' points to $tag_sha but this run built $sha; skipping release to keep the asset matched to the tagged commit."
+            exit 0
+          fi
 
           if gh release view "$tag" --repo "$repo" >/dev/null 2>&1; then
             gh release edit "$tag" --repo "$repo" --title "$tag"
+          elif [ -n "$tag_sha" ]; then
+            # タグ push で起動した場合など、タグが既に存在するときはそのタグに紐づける。
+            gh release create "$tag" --repo "$repo" --title "$tag" --notes "$notes" --verify-tag
           else
-            gh release create "$tag" --repo "$repo" --title "$tag" --notes "$notes"
+            # main への push では、実際にビルドしたコミットを指すタグを新規作成する。
+            gh release create "$tag" --repo "$repo" --title "$tag" --notes "$notes" --target "$sha"
           fi
           gh release upload "$tag" "$zip" --repo "$repo" --clobber
         env:
