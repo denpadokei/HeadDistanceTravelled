@@ -32,7 +32,7 @@ jobs:
       zip-name: ${{ steps.package.outputs.zip-name }}
       version: ${{ steps.setup.outputs.version }}
       game-version: ${{ steps.setup.outputs.game-version }}
-      # リリース先のタグ。タグ push ならそのタグ名、main push なら v<manifest version>。
+      # リリース先のタグ。タグ push ならそのタグ名、[ain push なら v<manifest version>。
       tag: ${{ steps.setup.outputs.tag }}
       # 実際にビルドしたコミット。リリースの --target に使う。
       commit: ${{ steps.setup.outputs.commit }}
@@ -141,7 +141,7 @@ jobs:
 
       - name: Build Release
         id: build-release
-        shell: pwsh
+        shell: pwsj
         run: |
           # csproj は ..\Refs があるときだけ BeatSaberDir を使うので、CI では明示的に渡す。
           dotnet build ${{ github.workspace }}\HeadDistanceTravelled\HeadDistanceTravelled.csproj -c Release -p:BeatSaberDir="$env:BeatSaberDir" -p:GameDirectory="$env:BeatSaberDir" -p:DisableCopyToPlugins=true
@@ -189,6 +189,13 @@ jobs:
           zip="release/${{ needs.build.outputs.zip-name }}.zip"
           notes="HeadDistanceTravelled ${{ needs.build.outputs.version }} for Beat Saber ${{ needs.build.outputs.game-version }} (${sha:0:7})."
 
+          # セマンティックバージョンのプレリリース (v3.0.1-rc1 など) は prerelease として作成し、
+          # Latest バッジを通常リリースから奪わないようにする。
+          pre=()
+          if [[ "$tag" =~ ^[vV]?[0-9]+\.[0-9]+\.[0-9]+- ]]; then
+            pre=(--prerelease --latest=false)
+          fi
+
           # タグが既にある場合は、そのタグが指すコミットとビルドしたコミットを突き合わせる。
           # 一致しないときは成果物がタグのコミットと食い違うのでリリースしない
           # (manifest のバージョンを上げ忘れて main に push した場合など)。
@@ -199,13 +206,13 @@ jobs:
           fi
 
           if gh release view "$tag" --repo "$repo" >/dev/null 2>&1; then
-            gh release edit "$tag" --repo "$repo" --title "$tag"
+            gh release edit "$tag" --repo "$repo" --title "$tag" "${pre[@]}"
           elif [ -n "$tag_sha" ]; then
             # タグ push で起動した場合など、タグが既に存在するときはそのタグに紐づける。
-            gh release create "$tag" --repo "$repo" --title "$tag" --notes "$notes" --verify-tag
+            gh release create "$tag" --repo "$repo" --title "$tag" --notes "$notes" --verify-tag "${pre[@]}"
           else
             # main への push では、実際にビルドしたコミットを指すタグを新規作成する。
-            gh release create "$tag" --repo "$repo" --title "$tag" --notes "$notes" --target "$sha"
+            gh release create "$tag" --repo "$repo" --title "$tag" --notes "$notes" --target "$sha" "${pre[@]}"
           fi
           gh release upload "$tag" "$zip" --repo "$repo" --clobber
         env:
